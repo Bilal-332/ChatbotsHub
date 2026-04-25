@@ -104,7 +104,7 @@ export default function RegisterPage() {
               </label>
               <div className="flex rounded-lg border border-gray-300 shadow-sm focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500">
                 <span className="flex items-center rounded-l-lg border-r border-gray-300 bg-gray-50 px-3 text-sm text-gray-500">
-                  chatbotshub.io/
+                  chatbotshub.me/
                 </span>
                 <input
                   id="slug"
