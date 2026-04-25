@@ -1,0 +1,30 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@store/authStore';
+import { Sidebar } from '@components/layout/Sidebar';
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace('/auth/login');
+    }
+  }, [isAuthenticated, router]);
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar />
+      <main className="min-w-0 flex-1 overflow-auto">
+        <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">{children}</div>
+      </main>
+    </div>
+  );
+}
