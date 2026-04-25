@@ -15,13 +15,13 @@ export const metadata: Metadata = {
     template: '%s | ChatbotsHub',
   },
   description:
-    'Deploy intelligent AI chatbots trained on your documents. No code required.',
-  robots: { index: false, follow: false }, // Private SaaS dashboard
+    'Upload documents and deploy AI-powered chatbots trained on your content. No code required.',
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={inter.variable} style={{ scrollBehavior: 'smooth' }}>
       <body>
         <Providers>{children}</Providers>
       </body>
