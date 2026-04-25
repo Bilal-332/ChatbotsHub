@@ -19,7 +19,7 @@ const envSchema = z.object({
   HUGGINGFACE_API_KEY: z.string().min(1),
   HUGGINGFACE_EMBEDDING_MODEL: z
     .string()
-    .default('sentence-transformers/all-MiniLM-L6-v2'),
+    .default('BAAI/bge-small-en-v1.5'),
   MAX_FILE_SIZE_MB: z.string().default('10'),
   UPLOAD_TEMP_DIR: z.string().default('./tmp/uploads'),
   RATE_LIMIT_WINDOW_MS: z.string().default('900000'),

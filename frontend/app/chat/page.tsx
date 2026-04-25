@@ -18,6 +18,13 @@ interface ChatSettings {
   primaryColor: string;
 }
 
+function formatAssistantMessage(content: string): string[] {
+  return content
+    .split(/(?<=[.!?])\s+(?=[A-Z0-9])/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+}
+
 export default function ChatWidgetPage() {
   const searchParams = useSearchParams();
   const apiKey = searchParams.get('apiKey') ?? '';
@@ -28,17 +35,38 @@ export default function ChatWidgetPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [settings, setSettings] = useState<ChatSettings>({
     chatbotName: 'AI Assistant',
-    welcomeMessage: 'Hello! How can I help you today?',
+    welcomeMessage: 'Hello! I’m here to help. Ask me anything about your documents.',
     primaryColor: colorParam,
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const conversationIdRef = useRef<string>('');
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api';
 
   useEffect(() => {
-    // Load org settings via public org info endpoint
+    if (typeof window === 'undefined') return;
+
+    const storageKey = `chatbotshub:conversation:${apiKey || 'anonymous'}`;
+    const existing = window.localStorage.getItem(storageKey);
+
+    if (existing) {
+      conversationIdRef.current = existing;
+      return;
+    }
+
+    const generatedId =
+      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+    conversationIdRef.current = generatedId;
+    window.localStorage.setItem(storageKey, generatedId);
+  }, [apiKey]);
+
+  useEffect(() => {
+    // Load workspace settings via the public settings endpoint
     if (!apiKey) return;
     axios
       .get<{ data: ChatSettings }>(`${API_BASE}/organizations/public?apiKey=${apiKey}`)
@@ -84,7 +112,10 @@ export default function ChatWidgetPage() {
         data: { answer: string; hasContext: boolean };
       }>(
         `${API_BASE}/chat/query`,
-        { question },
+        {
+          question,
+          conversationId: conversationIdRef.current || undefined,
+        },
         { headers: { 'x-api-key': apiKey } },
       );
 
@@ -168,7 +199,17 @@ export default function ChatWidgetPage() {
               }`}
               style={msg.role === 'assistant' ? { backgroundColor: primaryColor } : {}}
             >
-              {msg.content}
+              {msg.role === 'assistant' ? (
+                <div className="space-y-2">
+                  {formatAssistantMessage(msg.content).map((sentence, index) => (
+                    <p key={`${msg.id}-${index}`} className="m-0">
+                      {sentence}
+                    </p>
+                  ))}
+                </div>
+              ) : (
+                msg.content
+              )}
             </div>
           </div>
         ))}

@@ -24,6 +24,12 @@ router.post(
       .trim()
       .isLength({ min: 1, max: 1000 })
       .withMessage('Question must be 1–1000 characters'),
+    body('conversationId')
+      .optional()
+      .isString()
+      .trim()
+      .isLength({ min: 3, max: 100 })
+      .withMessage('conversationId must be 3–100 characters'),
     validateRequest,
   ],
   chatController.query.bind(chatController),

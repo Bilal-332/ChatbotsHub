@@ -78,7 +78,7 @@ export async function upsertVectors(
 export async function searchSimilarChunks(
   vector: number[],
   organizationId: string,
-  topK = 5,
+  topK = 8,
 ): Promise<ScoredChunk[]> {
   const qdrant = getQdrantClient();
 
@@ -100,7 +100,10 @@ export async function searchSimilarChunks(
     text: (r.payload?.text as string) ?? '',
     score: r.score,
     documentId: (r.payload?.documentId as string) ?? '',
+    documentTitle: (r.payload?.documentTitle as string | undefined) ?? undefined,
     chunkIndex: (r.payload?.chunkIndex as number) ?? 0,
+    section: (r.payload?.section as string | undefined) ?? undefined,
+    pageNumber: (r.payload?.pageNumber as number | undefined) ?? undefined,
   }));
 }
 

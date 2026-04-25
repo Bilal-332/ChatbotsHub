@@ -22,15 +22,22 @@ export interface ApiKeyRequest extends Request {
 export interface ChunkMetadata {
   organizationId: string;
   documentId: string;
+  documentTitle: string;
   chunkIndex: number;
+  section?: string;
+  pageNumber?: number;
   text: string;
 }
 
 export interface ScoredChunk {
   text: string;
   score: number;
+  rerankScore?: number;
   documentId: string;
+  documentTitle?: string;
   chunkIndex: number;
+  section?: string;
+  pageNumber?: number;
 }
 
 export interface EmbeddingVector {
