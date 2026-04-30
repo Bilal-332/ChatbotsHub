@@ -9,6 +9,7 @@ import { AxiosError } from 'axios';
 import { authApi } from '@lib/api';
 import { useAuthStore } from '@store/authStore';
 import { Loader2, Bot } from 'lucide-react';
+import { GoogleAuthButton } from '@components/auth/GoogleAuthButton';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -49,7 +50,26 @@ export default function LoginPage() {
         </div>
 
         <div className="card">
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <div className="space-y-4">
+            <GoogleAuthButton
+              mode="login"
+              onAuthenticated={({ user, tokens }) => {
+                setAuth(user, tokens.accessToken, tokens.refreshToken);
+                toast.success('Welcome back!');
+                router.push('/dashboard');
+              }}
+            />
+
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-gray-200" />
+              <span className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                or sign in with email
+              </span>
+              <div className="h-px flex-1 bg-gray-200" />
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
             <div>
               <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
                 Email address

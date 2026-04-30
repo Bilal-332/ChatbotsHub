@@ -14,6 +14,16 @@ export class AuthController {
     sendSuccess(res, result, 'Login successful');
   }
 
+  async googleRegister(req: Request, res: Response): Promise<void> {
+    const result = await authService.googleRegister(req.body);
+    sendCreated(res, result, 'Account created successfully');
+  }
+
+  async googleLogin(req: Request, res: Response): Promise<void> {
+    const result = await authService.googleLogin(req.body);
+    sendSuccess(res, result, 'Login successful');
+  }
+
   async refresh(req: Request, res: Response): Promise<void> {
     const { refreshToken } = req.body as { refreshToken: string };
     const tokens = await authService.refreshTokens(refreshToken);

@@ -46,6 +46,25 @@ router.post(
 );
 
 router.post(
+  '/google/register',
+  authRateLimiter,
+  [
+    body('idToken').isString().notEmpty(),
+    body('organizationName').isString().trim().isLength({ min: 2, max: 100 }),
+    slugValidator,
+    validateRequest,
+  ],
+  authController.googleRegister.bind(authController),
+);
+
+router.post(
+  '/google/login',
+  authRateLimiter,
+  [body('idToken').isString().notEmpty(), validateRequest],
+  authController.googleLogin.bind(authController),
+);
+
+router.post(
   '/refresh',
   [body('refreshToken').isString().notEmpty(), validateRequest],
   authController.refresh.bind(authController),

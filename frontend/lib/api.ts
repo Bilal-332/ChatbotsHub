@@ -22,6 +22,15 @@ export const authApi = {
   login: (payload: { email: string; password: string }) =>
     apiClient.post<ApiSuccess<AuthResult>>('/auth/login', payload),
 
+  googleRegister: (payload: {
+    idToken: string;
+    organizationName: string;
+    organizationSlug: string;
+  }) => apiClient.post<ApiSuccess<AuthResult>>('/auth/google/register', payload),
+
+  googleLogin: (payload: { idToken: string }) =>
+    apiClient.post<ApiSuccess<AuthResult>>('/auth/google/login', payload),
+
   refresh: (refreshToken: string) =>
     apiClient.post<ApiSuccess<{ tokens: TokenPair }>>('/auth/refresh', { refreshToken }),
 

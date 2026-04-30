@@ -9,6 +9,7 @@ import { AxiosError } from 'axios';
 import { authApi } from '@lib/api';
 import { useAuthStore } from '@store/authStore';
 import { Loader2, Bot } from 'lucide-react';
+import { GoogleAuthButton } from '@components/auth/GoogleAuthButton';
 
 function slugify(value: string): string {
   return value
@@ -81,7 +82,35 @@ export default function RegisterPage() {
         </div>
 
         <div className="card">
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <div className="space-y-4">
+            <GoogleAuthButton
+              mode="register"
+              organizationName={formData.organizationName}
+              organizationSlug={formData.organizationSlug}
+              disabled={!formData.organizationName || !formData.organizationSlug}
+              onAuthenticated={({ user, tokens }) => {
+                setAuth(user, tokens.accessToken, tokens.refreshToken);
+                toast.success('Account created! Welcome to ChatbotsHub.');
+                router.push('/dashboard');
+              }}
+            />
+
+            {(!formData.organizationName || !formData.organizationSlug) && (
+              <p className="text-center text-xs text-gray-500">
+                Add your organization details before continuing with Google.
+              </p>
+            )}
+
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-gray-200" />
+              <span className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                or sign up with email
+              </span>
+              <div className="h-px flex-1 bg-gray-200" />
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
             <div>
               <label htmlFor="org-name" className="mb-1.5 block text-sm font-medium text-gray-700">
                 Organization name

@@ -8,6 +8,8 @@ export interface IUser extends Document {
   _id: Types.ObjectId;
   email: string;
   passwordHash: string;
+  authProvider: 'password' | 'google';
+  googleId?: string;
   role: UserRole;
   organizationId: Types.ObjectId;
   isActive: boolean;
@@ -29,8 +31,20 @@ const userSchema = new Schema<IUser>(
     },
     passwordHash: {
       type: String,
-      required: true,
+      required: function (this: IUser) {
+        return this.authProvider === 'password';
+      },
       select: false, // Never returned in queries by default
+    },
+    authProvider: {
+      type: String,
+      enum: ['password', 'google'],
+      default: 'password',
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
     role: {
       type: String,
@@ -58,6 +72,7 @@ const userSchema = new Schema<IUser>(
 );
 
 userSchema.methods.comparePassword = async function (candidate: string): Promise<boolean> {
+  if (!this.passwordHash) return false;
   return bcrypt.compare(candidate, this.passwordHash as string);
 };
 

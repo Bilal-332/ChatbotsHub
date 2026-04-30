@@ -8,6 +8,7 @@ const envSchema = z.object({
   PORT: z.string().default('5000'),
   FRONTEND_URL: z.string().url(),
   MONGODB_URI: z.string().min(1),
+  GOOGLE_CLIENT_ID: z.string().min(1),
   JWT_ACCESS_SECRET: z.string().min(32),
   JWT_REFRESH_SECRET: z.string().min(32),
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
@@ -38,6 +39,9 @@ export const config = {
   nodeEnv: parsed.data.NODE_ENV,
   port: parseInt(parsed.data.PORT, 10),
   frontendUrl: parsed.data.FRONTEND_URL,
+  google: {
+    clientId: parsed.data.GOOGLE_CLIENT_ID,
+  },
   mongo: {
     uri: parsed.data.MONGODB_URI,
   },
