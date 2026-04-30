@@ -115,25 +115,9 @@ export function GoogleAuthButton({
   );
 
   const shouldRenderButton = useMemo(() => !isDisabled, [isDisabled]);
-  const handleMissingClientId = useCallback(() => {
-    toast.error(
-      'Google OAuth is not configured. Please ensure NEXT_PUBLIC_GOOGLE_CLIENT_ID environment variable is set in your deployment.',
-      {
-        duration: 5000,
-        style: {
-          background: '#fee2e2',
-          color: '#991b1b',
-          maxWidth: '400px',
-        },
-      }
-    );
-  }, []);
-
-  const hasMissingClientId = !clientId;
-  const isButtonDisabled = disabled;
 
   useEffect(() => {
-    if (hasMissingClientId || !buttonRef.current) return;
+    if (!shouldRenderButton || !buttonRef.current) return;
 
     let isMounted = true;
 
@@ -164,19 +148,13 @@ export function GoogleAuthButton({
     };
   }, [clientId, handleCredential, shouldRenderButton]);
 
-  if (hasMissingClientId) {
+  if (isDisabled) {
     return (
-      <button
-        type="button"
-        className="btn-secondary w-full"
-        onClick={handleMissingClientId}
-        disabled={isButtonDisabled}
-      >
+      <button type="button" className="btn-secondary w-full" disabled>
         Continue with Google
       </button>
     );
   }
 
-  return <div ref={buttonRef} className="flex w-full justify-center" />;
   return <div ref={buttonRef} className="flex w-full justify-center" />;
 }
