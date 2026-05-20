@@ -5,6 +5,10 @@ import mammoth from 'mammoth';
 import { AppError } from '@shared/errors';
 import type { DocumentSourceType } from '@shared/types';
 import { cleanText } from '@core/ai/textChunker';
+import { logger } from '@shared/logger';
+import Tesseract from 'tesseract.js';
+// @ts-ignore
+import * as pdf2img from 'pdf-img-convert';
 
 const MIN_TEXT_LENGTH = 50;
 
@@ -19,6 +23,34 @@ export async function extractText(
     case 'pdf': {
       const result = await pdfParse(buffer);
       rawText = result.text;
+      
+      // If pdf-parse extracts very little text (e.g. < 50 chars), it's likely a scanned/image-based PDF.
+      // Fallback to OCR.
+      const tempCleaned = cleanText(rawText);
+      if (tempCleaned.length < MIN_TEXT_LENGTH) {
+        logger.info('PDF contains little extractable text, falling back to OCR...');
+        try {
+          const images = await pdf2img.convert(buffer, {
+            base64: false,
+            scale: 2.0 // Scale up to improve OCR quality
+          });
+          
+          let ocrText = '';
+          for (let i = 0; i < images.length; i++) {
+            logger.info(`Running OCR on page ${i + 1}/${images.length}...`);
+            const imgBuffer = images[i];
+            const { data: { text } } = await Tesseract.recognize(Buffer.from(imgBuffer), 'eng');
+            ocrText += text + '\n\n';
+          }
+          
+          if (ocrText.trim().length > 0) {
+            rawText = ocrText;
+          }
+        } catch (error) {
+          logger.error('PDF OCR fallback failed:', error);
+          // If OCR fails, we just keep whatever rawText we had (which will throw INSUFFICIENT_TEXT later)
+        }
+      }
       break;
     }
     case 'docx': {

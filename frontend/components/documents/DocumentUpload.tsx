@@ -56,6 +56,17 @@ export function DocumentUpload({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="space-y-4">
+      {/* Instructions */}
+      <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-800">
+        <h3 className="mb-2 font-semibold">How to format your documents for best AI results:</h3>
+        <ul className="list-inside list-disc space-y-1">
+          <li><strong>Clear Paragraphs:</strong> Separate text paragraphs with a blank line. Avoid giant blocks of text.</li>
+          <li><strong>Short Headings:</strong> Use clear, title-cased headings without trailing punctuation (e.g., &quot;Employee Benefits&quot;).</li>
+          <li><strong>Supported Formats:</strong> Upload standard or scanned PDF, DOCX, or TXT files.</li>
+          <li><strong>Keep it Clean:</strong> Try to remove overly complex tables or formatting that isn&apos;t relevant text.</li>
+        </ul>
+      </div>
+
       {/* Dropzone */}
       <div
         {...getRootProps()}

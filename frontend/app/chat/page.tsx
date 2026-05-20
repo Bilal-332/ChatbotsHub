@@ -49,7 +49,12 @@ export default function ChatWidgetPage() {
     if (typeof window === 'undefined') return;
 
     const storageKey = `chatbotshub:conversation:${apiKey || 'anonymous'}`;
-    const existing = window.localStorage.getItem(storageKey);
+    let existing = null;
+    try {
+      existing = window.localStorage.getItem(storageKey);
+    } catch (e) {
+      console.warn('localStorage access denied, using temporary session.');
+    }
 
     if (existing) {
       conversationIdRef.current = existing;
@@ -62,7 +67,11 @@ export default function ChatWidgetPage() {
         : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
     conversationIdRef.current = generatedId;
-    window.localStorage.setItem(storageKey, generatedId);
+    try {
+      window.localStorage.setItem(storageKey, generatedId);
+    } catch (e) {
+      // Ignore exception in cross-origin iframes
+    }
   }, [apiKey]);
 
   useEffect(() => {
@@ -77,16 +86,26 @@ export default function ChatWidgetPage() {
   }, [apiKey, API_BASE]);
 
   useEffect(() => {
-    if (messages.length === 0) {
-      setMessages([
-        {
-          id: 'welcome',
-          role: 'assistant',
-          content: settings.welcomeMessage,
-        },
-      ]);
-    }
-  }, [settings.welcomeMessage, messages.length]);
+    setMessages((prev) => {
+      if (prev.length === 0) {
+        return [
+          {
+            id: 'welcome',
+            role: 'assistant',
+            content: settings.welcomeMessage,
+          },
+        ];
+      }
+      
+      if (prev[0].id === 'welcome' && prev[0].content !== settings.welcomeMessage) {
+        const newMessages = [...prev];
+        newMessages[0] = { ...newMessages[0], content: settings.welcomeMessage };
+        return newMessages;
+      }
+      
+      return prev;
+    });
+  }, [settings.welcomeMessage]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

@@ -204,6 +204,26 @@ export default function SettingsPage() {
           </button>
         </div>
       </div>
+
+      {/* Direct Link */}
+      <div className="card space-y-4">
+        <h2 className="text-base font-semibold text-gray-900">Direct Link</h2>
+        <p className="text-sm text-gray-500">
+          Share this link with anyone to let them test your chatbot directly in their browser.
+        </p>
+
+        <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+          <a
+            href={`${process.env.NEXT_PUBLIC_WIDGET_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com')}/chat?apiKey=${org?.apiKey}&color=${encodeURIComponent(org?.settings?.primaryColor ?? formData.primaryColor)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 truncate text-sm text-primary-600 hover:underline"
+          >
+            {`${process.env.NEXT_PUBLIC_WIDGET_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com')}/chat?apiKey=${org?.apiKey}&color=${encodeURIComponent(org?.settings?.primaryColor ?? formData.primaryColor)}`}
+          </a>
+          <CopyButton value={`${process.env.NEXT_PUBLIC_WIDGET_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com')}/chat?apiKey=${org?.apiKey}&color=${encodeURIComponent(org?.settings?.primaryColor ?? formData.primaryColor)}`} />
+        </div>
+      </div>
     </div>
   );
 }
