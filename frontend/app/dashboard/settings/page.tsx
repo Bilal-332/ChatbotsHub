@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { AxiosError } from 'axios';
 import { organizationApi } from '@/lib/api';
-import type { Organization } from '@/appTypes/index';
+import type { Organization } from '@/types/index';
 import { Copy, RefreshCw, Loader2, Check, Settings, Terminal, Shield, Palette } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { motion } from 'framer-motion';

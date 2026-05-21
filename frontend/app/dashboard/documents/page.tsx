@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { documentApi } from '@/lib/api';
-import type { Paginated, Document } from '@/appTypes/index';
+import type { Paginated, Document } from '@/types/index';
 import { DocumentCard } from '@/components/documents/DocumentCard';
 import { DocumentUpload } from '@/components/documents/DocumentUpload';
 import { Plus, FileText, Loader2 } from 'lucide-react';

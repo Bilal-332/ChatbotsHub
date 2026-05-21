@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { organizationApi, documentApi } from '@/lib/api';
 import { FileText, MessageSquare, Zap, TrendingUp, Search } from 'lucide-react';
-import type { OrgStats, Paginated, Document } from '@/appTypes/index';
+import type { OrgStats, Paginated, Document } from '@/types/index';
 import { PLAN_DISPLAY } from '@/lib/constants';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { motion } from 'framer-motion';
