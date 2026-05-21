@@ -58,7 +58,7 @@ export function DocumentCard({ doc }: { doc: Document }) {
           <FileText className="h-5 w-5 text-primary-600" />
         </div>
         <div className="min-w-0">
-          <p className="truncate font-medium text-gray-900">{doc.title}</p>
+          <p className="truncate font-medium text-white">{doc.title}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
             <span className="uppercase">{doc.sourceType}</span>
             <span>•</span>

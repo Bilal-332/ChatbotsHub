@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { AxiosError } from 'axios';
-import { organizationApi } from '@lib/api';
-import type { Organization } from '@appTypes/index';
-import { Copy, RefreshCw, Loader2, Check } from 'lucide-react';
+import { organizationApi } from '@/lib/api';
+import type { Organization } from '@/appTypes/index';
+import { Copy, RefreshCw, Loader2, Check, Settings, Terminal, Shield, Palette } from 'lucide-react';
+import { GlassCard } from '@/components/shared/GlassCard';
+import { motion } from 'framer-motion';
 
 function CopyButton({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
@@ -20,10 +22,10 @@ function CopyButton({ value }: { value: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="rounded p-1.5 text-gray-400 hover:text-gray-700"
-      title="Copy"
+      className="rounded-lg p-2 text-text-secondary hover:text-text-primary hover:bg-surface transition-colors"
+      title="Copy to clipboard"
     >
-      {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+      {copied ? <Check className="h-4 w-4 text-status-success" /> : <Copy className="h-4 w-4" />}
     </button>
   );
 }
@@ -40,7 +42,7 @@ export default function SettingsPage() {
   const [formData, setFormData] = useState({
     chatbotName: '',
     welcomeMessage: '',
-    primaryColor: '#6366f1',
+    primaryColor: '#5B6CFF', // Default to new PRIMARY
   });
 
   const [initialized, setInitialized] = useState(false);
@@ -86,144 +88,205 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="mt-1 text-sm text-gray-500">Manage your workspace and assistant settings.</p>
-      </div>
+    <div className="space-y-8 max-w-4xl">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h1 className="text-3xl font-bold tracking-tight text-text-primary">Workspace Settings</h1>
+        <p className="mt-2 text-sm text-text-secondary">Configure your AI agent and manage integration keys.</p>
+      </motion.div>
 
       {/* Chatbot Customization */}
-      <div className="card space-y-5">
-        <h2 className="text-base font-semibold text-gray-900">Chatbot Customization</h2>
-
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">Chatbot name</label>
-          <input
-            type="text"
-            className="input max-w-sm"
-            value={formData.chatbotName}
-            onChange={(e) => setFormData((p) => ({ ...p, chatbotName: e.target.value }))}
-            maxLength={50}
-          />
-        </div>
-
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">Welcome message</label>
-          <textarea
-            className="input max-w-lg resize-none"
-            rows={3}
-            value={formData.welcomeMessage}
-            onChange={(e) => setFormData((p) => ({ ...p, welcomeMessage: e.target.value }))}
-            maxLength={200}
-          />
-        </div>
-
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">Primary color</label>
-          <div className="flex items-center gap-3">
-            <input
-              type="color"
-              className="h-10 w-16 cursor-pointer rounded border border-gray-300 p-1"
-              value={formData.primaryColor}
-              onChange={(e) => setFormData((p) => ({ ...p, primaryColor: e.target.value }))}
-            />
-            <span className="text-sm text-gray-500">{formData.primaryColor}</span>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <GlassCard className="space-y-6">
+          <div className="flex items-center gap-3 border-b border-border pb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
+              <Palette className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-text-primary">Agent Appearance</h2>
+              <p className="text-sm text-text-secondary">Customize how your AI agent looks to users.</p>
+            </div>
           </div>
-        </div>
 
-        <button className="btn-primary" onClick={() => updateSettings()} disabled={isSaving}>
-          {isSaving ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save changes'
-          )}
-        </button>
-      </div>
+          <div className="space-y-5 pt-2">
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-text-primary">Agent Name</label>
+              <input
+                type="text"
+                className="input max-w-sm"
+                value={formData.chatbotName}
+                onChange={(e) => setFormData((p) => ({ ...p, chatbotName: e.target.value }))}
+                maxLength={50}
+                placeholder="e.g. Acme Support Bot"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-text-primary">Welcome Message</label>
+              <textarea
+                className="input max-w-xl resize-none"
+                rows={3}
+                value={formData.welcomeMessage}
+                onChange={(e) => setFormData((p) => ({ ...p, welcomeMessage: e.target.value }))}
+                maxLength={200}
+                placeholder="Hi there! How can I help you today?"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-text-primary">Brand Color</label>
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <input
+                    type="color"
+                    className="h-10 w-20 cursor-pointer rounded-lg border border-border bg-card p-1"
+                    value={formData.primaryColor}
+                    onChange={(e) => setFormData((p) => ({ ...p, primaryColor: e.target.value }))}
+                  />
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-surface">
+                  <span className="w-4 h-4 rounded-full" style={{ backgroundColor: formData.primaryColor }}></span>
+                  <span className="text-sm font-mono text-text-secondary uppercase">{formData.primaryColor}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-border">
+              <button className="btn-primary" onClick={() => updateSettings()} disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving Changes...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </button>
+            </div>
+          </div>
+        </GlassCard>
+      </motion.div>
 
       {/* API Key */}
-      <div className="card space-y-4">
-        <h2 className="text-base font-semibold text-gray-900">API Key</h2>
-        <p className="text-sm text-gray-500">
-          Use this key in the widget embed code. Keep it confidential.
-        </p>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <GlassCard className="space-y-6">
+          <div className="flex items-center gap-3 border-b border-border pb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-warning/10 border border-status-warning/20">
+              <Shield className="h-5 w-5 text-status-warning" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-text-primary">API Credentials</h2>
+              <p className="text-sm text-text-secondary">
+                Use this key to authenticate REST API requests and widget embeds.
+              </p>
+            </div>
+          </div>
 
-        <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
-          <code className="flex-1 truncate text-sm font-mono text-gray-800">{org?.apiKey}</code>
-          <CopyButton value={org?.apiKey ?? ''} />
-        </div>
+          <div className="pt-2">
+            <div className="flex items-center gap-3 rounded-xl border border-border bg-surface/50 px-4 py-3 shadow-inner">
+              <code className="flex-1 truncate text-sm font-mono text-primary">{org?.apiKey}</code>
+              <CopyButton value={org?.apiKey ?? ''} />
+            </div>
 
-        <button
-          className="btn-secondary text-sm"
-          onClick={() => {
-            if (confirm('Regenerate API key? The old key will stop working immediately.')) {
-              regenerateKey();
-            }
-          }}
-          disabled={isRegenerating}
-        >
-          {isRegenerating ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Regenerating...
-            </>
-          ) : (
-            <>
-              <RefreshCw className="h-4 w-4" />
-              Regenerate key
-            </>
-          )}
-        </button>
-      </div>
+            <button
+              className="btn-secondary mt-6"
+              onClick={() => {
+                if (confirm('Regenerate API key? The old key will stop working immediately and you will need to update all integrations.')) {
+                  regenerateKey();
+                }
+              }}
+              disabled={isRegenerating}
+            >
+              {isRegenerating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Regenerating...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4" />
+                  Roll API Key
+                </>
+              )}
+            </button>
+          </div>
+        </GlassCard>
+      </motion.div>
 
-      {/* Embed Widget */}
-      <div className="card space-y-4">
-        <h2 className="text-base font-semibold text-gray-900">Embed Widget</h2>
-        <p className="text-sm text-gray-500">
-          Add this snippet before the closing <code className="font-mono text-xs">&lt;/body&gt;</code> tag on your website.
-        </p>
+      {/* Integration Code */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
+        <GlassCard className="space-y-6">
+          <div className="flex items-center gap-3 border-b border-border pb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#7C4DFF]/10 border border-[#7C4DFF]/20">
+              <Terminal className="h-5 w-5 text-[#7C4DFF]" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-text-primary">Widget Integration</h2>
+              <p className="text-sm text-text-secondary">
+                Add this code to your application to embed the chat interface.
+              </p>
+            </div>
+          </div>
 
-        <div className="relative">
-          <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-green-400">
-            <code>{widgetScript}</code>
-          </pre>
-          <button
-            onClick={copyEmbed}
-            className="absolute right-3 top-3 rounded-md bg-gray-700 p-1.5 text-gray-300 hover:text-white"
-          >
-            {embedCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          </button>
-        </div>
-      </div>
+          <div className="space-y-6 pt-2">
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-text-primary">HTML Snippet</label>
+              <div className="relative group">
+                <pre className="overflow-x-auto rounded-xl border border-border bg-[#0b0f19] p-5 text-sm shadow-inner">
+                  <code className="text-emerald-400 font-mono leading-relaxed">{widgetScript}</code>
+                </pre>
+                <button
+                  onClick={copyEmbed}
+                  className="absolute right-3 top-3 rounded-lg bg-surface/80 backdrop-blur-sm border border-border p-2 text-text-secondary opacity-0 group-hover:opacity-100 transition-all hover:text-text-primary"
+                  title="Copy code"
+                >
+                  {embedCopied ? <Check className="h-4 w-4 text-status-success" /> : <Copy className="h-4 w-4" />}
+                </button>
+              </div>
+              <p className="mt-3 text-xs text-text-secondary">
+                Paste this snippet right before the closing <code className="rounded bg-surface px-1.5 py-0.5 text-primary border border-border">&lt;/body&gt;</code> tag on your website.
+              </p>
+            </div>
 
-      {/* Direct Link */}
-      <div className="card space-y-4">
-        <h2 className="text-base font-semibold text-gray-900">Direct Link</h2>
-        <p className="text-sm text-gray-500">
-          Share this link with anyone to let them test your chatbot directly in their browser.
-        </p>
-
-        <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
-          <a
-            href={`${process.env.NEXT_PUBLIC_WIDGET_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com')}/chat?apiKey=${org?.apiKey}&color=${encodeURIComponent(org?.settings?.primaryColor ?? formData.primaryColor)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 truncate text-sm text-primary-600 hover:underline"
-          >
-            {`${process.env.NEXT_PUBLIC_WIDGET_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com')}/chat?apiKey=${org?.apiKey}&color=${encodeURIComponent(org?.settings?.primaryColor ?? formData.primaryColor)}`}
-          </a>
-          <CopyButton value={`${process.env.NEXT_PUBLIC_WIDGET_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com')}/chat?apiKey=${org?.apiKey}&color=${encodeURIComponent(org?.settings?.primaryColor ?? formData.primaryColor)}`} />
-        </div>
-      </div>
+            <div className="pt-4 border-t border-border">
+              <label className="mb-2 block text-sm font-semibold text-text-primary">Direct Testing Link</label>
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-surface/50 px-4 py-3 shadow-inner">
+                <a
+                  href={`${process.env.NEXT_PUBLIC_WIDGET_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com')}/chat?apiKey=${org?.apiKey}&color=${encodeURIComponent(org?.settings?.primaryColor ?? formData.primaryColor)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 truncate text-sm text-primary hover:text-primary-accent hover:underline transition-colors font-medium"
+                >
+                  {`${process.env.NEXT_PUBLIC_WIDGET_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com')}/chat?apiKey=${org?.apiKey}`}
+                </a>
+                <CopyButton value={`${process.env.NEXT_PUBLIC_WIDGET_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com')}/chat?apiKey=${org?.apiKey}&color=${encodeURIComponent(org?.settings?.primaryColor ?? formData.primaryColor)}`} />
+              </div>
+            </div>
+          </div>
+        </GlassCard>
+      </motion.div>
     </div>
   );
 }

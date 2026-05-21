@@ -2,8 +2,9 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@store/authStore';
-import { Sidebar } from '@components/layout/Sidebar';
+import { useAuthStore } from '@/store/authStore';
+import { Sidebar } from '@/components/layout/Sidebar';
+import { AnimatedBackground } from '@/components/shared/AnimatedBackground';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -20,10 +21,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-background text-text-primary overflow-hidden relative">
+      <AnimatedBackground />
       <Sidebar />
-      <main className="min-w-0 flex-1 overflow-auto">
-        <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">{children}</div>
+      <main className="min-w-0 flex-1 overflow-auto relative z-10">
+        <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8 lg:py-12">{children}</div>
       </main>
     </div>
   );

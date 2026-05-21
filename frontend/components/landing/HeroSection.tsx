@@ -1,61 +1,90 @@
+'use client';
+
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const HeroScene = dynamic(() => import('@components/scenes/HeroScene'), {
+const HeroScene = dynamic(() => import('@/components/scenes/HeroScene'), {
   ssr: false,
   loading: () => <div className="h-full w-full" />,
 });
 
 export function HeroSection() {
   return (
-    <section className="relative flex min-h-screen items-center overflow-hidden bg-white pt-16">
-      {/* Ambient glow blobs */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full bg-primary-50 opacity-70 blur-3xl" />
-        <div className="absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-primary-100 opacity-40 blur-3xl" />
-      </div>
-
-      <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 px-6 py-24 lg:grid-cols-2">
+    <section className="relative flex min-h-screen items-center overflow-hidden pt-16">
+      <div className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-16 px-6 py-24 lg:grid-cols-2 z-10">
+        
         {/* ── Left: Copy ─────────────────────────────────── */}
         <div className="flex flex-col">
-          {/* Badge */}
-          <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-primary-100 bg-primary-50 px-3.5 py-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-primary-600" />
-            <span className="text-xs font-semibold text-primary-700 tracking-wide">AI-Powered Document Intelligence</span>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 backdrop-blur-sm"
+          >
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold text-primary tracking-wide">Enterprise AI Knowledge Infrastructure</span>
+          </motion.div>
 
-          <h1 className="text-[3.25rem] font-extrabold leading-[1.08] tracking-tight text-gray-900 sm:text-[3.75rem]">
-            Turn your<br />
-            documents into{' '}
-            <span className="relative inline-block bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-400 bg-clip-text text-transparent">
-              AI chatbots
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-[3.5rem] font-bold leading-[1.1] tracking-tight text-text-primary sm:text-[4.5rem]"
+          >
+            Deploy Intelligent<br />
+            <span className="relative inline-block bg-gradient-to-r from-primary via-[#7C4DFF] to-indigo-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(91,108,255,0.3)]">
+              AI Agents
             </span>
-          </h1>
+          </motion.h1>
 
-          <p className="mt-6 max-w-md text-[1.1rem] leading-relaxed text-gray-500">
-            Upload PDFs, Word docs, or text — get a smart, embeddable chatbot trained on your content in minutes.
-          </p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mt-6 max-w-xl text-[1.25rem] leading-relaxed text-text-secondary"
+          >
+            Transform your enterprise data into autonomous AI chatbots. Built for scale, security, and precision.
+          </motion.p>
 
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <Link href="/auth/register" className="btn-primary gap-2 !px-6 !py-3 text-base shadow-md shadow-primary-200">
-              Get started free
-              <ArrowRight className="h-4 w-4" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mt-12 flex flex-wrap items-center gap-5"
+          >
+            <Link href="/auth/register" className="btn-primary !px-8 !py-4 text-base font-semibold group">
+              Start Building
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Link>
-            <Link href="/auth/login" className="btn-secondary !px-6 !py-3 text-base">
-              Sign in
+            <Link href="/auth/login" className="btn-secondary !px-8 !py-4 text-base font-semibold">
+              View Demo
             </Link>
-          </div>
+          </motion.div>
 
-          <p className="mt-5 text-xs font-medium text-gray-400">
-            No credit card required · Free plan available
-          </p>
+          <motion.p
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             transition={{ duration: 0.5, delay: 0.6 }}
+             className="mt-6 text-sm font-medium text-text-secondary/60"
+          >
+            Trusted by innovative teams worldwide. No credit card required.
+          </motion.p>
         </div>
 
         {/* ── Right: 3D Scene ─────────────────────────────── */}
-        <div className="hidden h-[480px] w-full lg:block" aria-hidden>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, delay: 0.4 }}
+          className="hidden h-[600px] w-full lg:block relative"
+          aria-hidden
+        >
+          {/* Subtle glow behind the 3D scene */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
           <HeroScene />
-        </div>
+        </motion.div>
       </div>
     </section>
   );

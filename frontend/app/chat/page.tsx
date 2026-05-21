@@ -82,7 +82,7 @@ export default function ChatWidgetPage() {
       .then((r) => {
         if (r.data?.data) setSettings(r.data.data);
       })
-      .catch(() => {}); // Silently fail – use defaults
+      .catch(() => { }); // Silently fail – use defaults
   }, [apiKey, API_BASE]);
 
   useEffect(() => {
@@ -96,13 +96,13 @@ export default function ChatWidgetPage() {
           },
         ];
       }
-      
+
       if (prev[0].id === 'welcome' && prev[0].content !== settings.welcomeMessage) {
         const newMessages = [...prev];
         newMessages[0] = { ...newMessages[0], content: settings.welcomeMessage };
         return newMessages;
       }
-      
+
       return prev;
     });
   }, [settings.welcomeMessage]);
@@ -197,9 +197,8 @@ export default function ChatWidgetPage() {
           >
             {/* Avatar */}
             <div
-              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                msg.role === 'user' ? 'bg-gray-200' : ''
-              }`}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${msg.role === 'user' ? 'bg-gray-200' : ''
+                }`}
               style={msg.role === 'assistant' ? { backgroundColor: primaryColor } : {}}
             >
               {msg.role === 'user' ? (
@@ -211,11 +210,10 @@ export default function ChatWidgetPage() {
 
             {/* Bubble */}
             <div
-              className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                msg.role === 'user'
+              className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${msg.role === 'user'
                   ? 'rounded-tr-sm bg-gray-100 text-gray-800'
                   : 'rounded-tl-sm text-white'
-              }`}
+                }`}
               style={msg.role === 'assistant' ? { backgroundColor: primaryColor } : {}}
             >
               {msg.role === 'assistant' ? (
@@ -264,7 +262,7 @@ export default function ChatWidgetPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask a question..."
-            className="min-w-0 flex-1 rounded-full border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none transition focus:border-transparent focus:ring-2"
+            className="min-w-0 flex-1 rounded-full text-black border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none transition focus:border-transparent focus:ring-2"
             style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
             disabled={isLoading || !apiKey}
             maxLength={1000}

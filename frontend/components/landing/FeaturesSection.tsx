@@ -1,86 +1,103 @@
-import dynamic from 'next/dynamic';
-import { BrainCircuit, Zap, BarChart2, ShieldCheck } from 'lucide-react';
-import type { FeatureType } from '@components/scenes/FeatureScene';
+'use client';
 
-const FeatureScene = dynamic(() => import('@components/scenes/FeatureScene'), {
+import dynamic from 'next/dynamic';
+import { BrainCircuit, Zap, BarChart2, ShieldCheck, Database, LayoutGrid } from 'lucide-react';
+import { GlassCard } from '@/components/shared/GlassCard';
+import type { FeatureType } from '@/components/scenes/FeatureScene';
+
+const FeatureScene = dynamic(() => import('@/components/scenes/FeatureScene'), {
   ssr: false,
   loading: () => <div className="h-full w-full" />,
 });
 
-const FEATURES: {
-  feature: FeatureType;
-  icon: React.ElementType;
-  title: string;
-  desc: string;
-  accent: string;
-}[] = [
+const FEATURES = [
   {
-    feature: 'ai',
+    feature: 'ai' as FeatureType,
     icon: BrainCircuit,
-    title: 'AI Document Processing',
-    desc: 'Automatic chunking, semantic embedding, and vector search — all without configuration.',
-    accent: 'from-primary-50 to-indigo-50',
+    title: 'Advanced AI Processing',
+    desc: 'Automatic chunking, semantic embedding, and vector search with zero configuration required.',
+    colSpan: 'md:col-span-2 lg:col-span-2',
+    rowSpan: 'row-span-2',
+    height: 'min-h-[400px]',
   },
   {
-    feature: 'api',
+    feature: 'secure' as FeatureType,
+    icon: ShieldCheck,
+    title: 'Enterprise Security',
+    desc: 'Isolated knowledge bases ensure your data never leaks to other tenants. SOC2 compliant infrastructure.',
+    colSpan: 'md:col-span-1 lg:col-span-2',
+    rowSpan: 'row-span-1',
+    height: 'min-h-[250px]',
+  },
+  {
+    feature: 'api' as FeatureType,
     icon: Zap,
-    title: 'REST API & Widget',
-    desc: 'Query via a clean REST API or embed a chat widget on any page in under a minute.',
-    accent: 'from-purple-50 to-primary-50',
+    title: 'Robust API',
+    desc: 'Query via our high-performance REST API or use our pre-built SDKs.',
+    colSpan: 'md:col-span-1 lg:col-span-1',
+    rowSpan: 'row-span-1',
+    height: 'min-h-[250px]',
   },
   {
-    feature: 'analytics',
+    feature: 'analytics' as FeatureType,
     icon: BarChart2,
     title: 'Usage Analytics',
-    desc: 'Track queries, document usage, and monthly limits from a single dashboard.',
-    accent: 'from-indigo-50 to-blue-50',
-  },
-  {
-    feature: 'secure',
-    icon: ShieldCheck,
-    title: 'Secure & Isolated',
-    desc: 'Each organization gets an isolated knowledge base. Your data never leaks to other tenants.',
-    accent: 'from-primary-50 to-violet-50',
+    desc: 'Deep insights into query patterns and model performance.',
+    colSpan: 'md:col-span-1 lg:col-span-1',
+    rowSpan: 'row-span-1',
+    height: 'min-h-[250px]',
   },
 ];
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="bg-white py-28">
-      <div className="mx-auto max-w-6xl px-6">
+    <section id="features" className="relative py-32 z-10">
+      <div className="mx-auto max-w-7xl px-6">
         {/* Header */}
-        <div className="mb-16 text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary-600">
-            Features
-          </p>
-          <h2 className="text-4xl font-extrabold tracking-tight text-gray-900">
-            Everything you need, nothing you don&apos;t
+        <div className="mb-20 flex flex-col items-center text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1">
+            <LayoutGrid className="h-4 w-4 text-primary" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary">Capabilities</span>
+          </div>
+          <h2 className="text-[2.5rem] font-bold tracking-tight text-text-primary md:text-[3rem]">
+            Built for Scale and Precision
           </h2>
+          <p className="mt-4 max-w-2xl text-lg text-text-secondary">
+            Everything you need to build production-grade AI applications, packed into a single, cohesive platform.
+          </p>
         </div>
 
-        {/* Feature grid */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map(({ feature, icon: Icon, title, desc, accent }) => (
-            <div
-              key={feature}
-              className="card group flex flex-col gap-5 overflow-hidden !p-0 transition-all hover:-translate-y-1 hover:shadow-lg"
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {FEATURES.map((item, i) => (
+            <GlassCard
+              key={i}
+              animated
+              motionProps={{
+                initial: { opacity: 0, y: 20 },
+                whileInView: { opacity: 1, y: 0 },
+                viewport: { once: true, margin: "-100px" },
+                transition: { duration: 0.5, delay: i * 0.1 }
+              }}
+              className={`flex flex-col overflow-hidden p-0 ${item.colSpan} ${item.rowSpan} ${item.height}`}
             >
-              {/* Mini 3D visual */}
-              <div className={`flex h-36 items-center justify-center bg-gradient-to-br ${accent}`}>
-                <div className="h-24 w-24">
-                  <FeatureScene feature={feature} />
+              {/* Scene Area */}
+              <div className="relative flex-1 bg-surface/30 min-h-[150px] flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-card/90 z-10" />
+                <div className="w-full h-full opacity-60 mix-blend-screen">
+                  <FeatureScene feature={item.feature} />
                 </div>
               </div>
 
-              {/* Card body */}
-              <div className="flex flex-col gap-2.5 px-5 pb-6">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-600 transition-transform group-hover:scale-110">
-                  <Icon className="h-4.5 w-4.5 text-white" aria-hidden />
+              {/* Content Area */}
+              <div className="relative z-20 flex flex-col gap-3 p-8 pt-0">
+                <div className="flex h-12 w-12 -mt-6 items-center justify-center rounded-xl bg-primary/20 border border-primary/30 backdrop-blur-md mb-2 shadow-glow-primary">
+                  <item.icon className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-base font-bold text-gray-900">{title}</h3>
-                <p className="text-sm leading-relaxed text-gray-500">{desc}</p>
+                <h3 className="text-xl font-bold text-text-primary">{item.title}</h3>
+                <p className="text-base text-text-secondary">{item.desc}</p>
               </div>
-            </div>
+            </GlassCard>
           ))}
         </div>
       </div>

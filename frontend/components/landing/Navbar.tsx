@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Bot, Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -15,52 +16,60 @@ export function Navbar() {
   }, []);
 
   return (
-    <nav
-      className={`fixed left-0 right-0 top-0 z-40 transition-all duration-300 ${
-        scrolled
-          ? 'border-b border-gray-100 bg-white/90 shadow-sm backdrop-blur-md'
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.5 }}
+      className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${scrolled
+          ? 'border-b border-border bg-background/50 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.1)]'
           : 'bg-transparent'
-      }`}
+        }`}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-2.5" aria-label="ChatbotsHub home">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-600 shadow-md">
-            <Bot className="h-6 w-6 text-white" />
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <Link href="/" className="flex items-center gap-3 group" aria-label="ChatbotsHub home">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20 border border-primary/30 shadow-glow-primary transition-transform group-hover:scale-105">
+            <Bot className="h-5 w-5 text-primary" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-gray-900">
-            Chatbots<span className="text-primary-600">Hub</span>
+          <span className="text-xl font-bold tracking-tight text-text-primary">
+            Chatbots<span className="text-primary">Hub</span>
           </span>
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden items-center gap-7 md:flex">
+        <div className="hidden items-center gap-8 md:flex">
           <a
             href="#how-it-works"
-            className="text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
+            className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
           >
-            How it works
+            Platform
           </a>
           <a
             href="#features"
-            className="text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
+            className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
           >
-            Features
+            Capabilities
+          </a>
+          <a
+            href="#"
+            className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+          >
+            Enterprise
           </a>
         </div>
 
         {/* Desktop CTAs */}
-        <div className="hidden items-center gap-3 md:flex">
-          <Link href="/auth/login" className="btn-secondary !py-2 !px-4 text-sm">
-            Sign in
+        <div className="hidden items-center gap-4 md:flex">
+          <Link href="/auth/login" className="text-sm font-medium text-text-primary hover:text-primary transition-colors">
+            Sign In
           </Link>
-          <Link href="/auth/register" className="btn-primary !py-2 !px-4 text-sm">
-            Get started free
+          <Link href="/auth/register" className="btn-primary !py-2 !px-5 text-sm">
+            Get Started
           </Link>
         </div>
 
         {/* Mobile menu toggle */}
         <button
-          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 md:hidden"
+          className="rounded-lg p-2 text-text-secondary hover:bg-surface md:hidden transition-colors"
           onClick={() => setMenuOpen((v) => !v)}
           aria-label="Toggle menu"
         >
@@ -69,26 +78,36 @@ export function Navbar() {
       </div>
 
       {/* Mobile menu */}
-      {menuOpen && (
-        <div className="border-t border-gray-100 bg-white px-6 py-4 md:hidden">
-          <div className="flex flex-col gap-4">
-            <a href="#how-it-works" className="text-sm font-medium text-gray-700" onClick={() => setMenuOpen(false)}>
-              How it works
-            </a>
-            <a href="#features" className="text-sm font-medium text-gray-700" onClick={() => setMenuOpen(false)}>
-              Features
-            </a>
-            <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
-              <Link href="/auth/login" className="btn-secondary w-full justify-center text-sm">
-                Sign in
-              </Link>
-              <Link href="/auth/register" className="btn-primary w-full justify-center text-sm">
-                Get started free
-              </Link>
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="border-t border-border bg-surface/90 backdrop-blur-xl px-6 py-4 md:hidden overflow-hidden"
+          >
+            <div className="flex flex-col gap-4">
+              <a href="#how-it-works" className="text-sm font-medium text-text-primary" onClick={() => setMenuOpen(false)}>
+                Capabilities
+              </a>
+              <a href="#features" className="text-sm font-medium text-text-primary" onClick={() => setMenuOpen(false)}>
+                Platform
+              </a>
+              <a href="#" className="text-sm font-medium text-text-primary" onClick={() => setMenuOpen(false)}>
+                Enterprise
+              </a>
+              <div className="flex flex-col gap-3 pt-4 border-t border-border">
+                <Link href="/auth/login" className="btn-secondary w-full justify-center text-sm">
+                  Sign In
+                </Link>
+                <Link href="/auth/register" className="btn-primary w-full justify-center text-sm">
+                  Get Started
+                </Link>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
-    </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
   );
 }

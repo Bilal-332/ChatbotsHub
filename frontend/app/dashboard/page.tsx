@@ -1,10 +1,12 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { organizationApi, documentApi } from '@lib/api';
-import { FileText, MessageSquare, Zap, TrendingUp } from 'lucide-react';
-import type { OrgStats, Paginated, Document } from '@appTypes/index';
-import { PLAN_DISPLAY } from '@lib/constants';
+import { organizationApi, documentApi } from '@/lib/api';
+import { FileText, MessageSquare, Zap, TrendingUp, Search } from 'lucide-react';
+import type { OrgStats, Paginated, Document } from '@/appTypes/index';
+import { PLAN_DISPLAY } from '@/lib/constants';
+import { GlassCard } from '@/components/shared/GlassCard';
+import { motion } from 'framer-motion';
 
 const PLAN_LIMITS: Record<string, { maxDocuments: number; maxMonthlyQueries: number }> = {
   free: { maxDocuments: 3, maxMonthlyQueries: 200 },
@@ -18,44 +20,54 @@ function StatCard({
   max,
   icon: Icon,
   color,
+  delay = 0,
 }: {
   label: string;
   value: number | string;
   max?: number;
   icon: React.ElementType;
   color: string;
+  delay?: number;
 }) {
   const numValue = typeof value === 'number' ? value : 0;
   const percentage = max ? Math.round((numValue / max) * 100) : null;
 
   return (
-    <div className="card">
+    <GlassCard 
+      animated 
+      motionProps={{
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.5, delay }
+      }}
+      className="p-6"
+    >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-500">{label}</p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">
+          <p className="text-sm font-medium text-text-secondary uppercase tracking-wider">{label}</p>
+          <p className="mt-2 text-3xl font-bold text-text-primary">
             {typeof value === 'number' ? value.toLocaleString() : value}
-            {max && <span className="ml-1 text-base font-normal text-gray-400">/ {max.toLocaleString()}</span>}
+            {max && <span className="ml-1 text-lg font-normal text-text-secondary">/ {max.toLocaleString()}</span>}
           </p>
         </div>
-        <div className={`rounded-xl p-3 ${color}`}>
-          <Icon className="h-6 w-6 text-white" />
+        <div className={`rounded-xl p-3 bg-surface border border-border ${color}`}>
+          <Icon className="h-6 w-6" />
         </div>
       </div>
       {percentage !== null && (
-        <div className="mt-4">
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+        <div className="mt-6">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-surface border border-border/50">
             <div
-              className={`h-1.5 rounded-full transition-all ${
-                percentage >= 90 ? 'bg-red-500' : percentage >= 70 ? 'bg-yellow-500' : 'bg-primary-500'
-              }`}
+              className={`h-2 rounded-full transition-all ${
+                percentage >= 90 ? 'bg-status-danger' : percentage >= 70 ? 'bg-status-warning' : 'bg-primary'
+              } shadow-[0_0_10px_rgba(var(--color-primary),0.5)]`}
               style={{ width: `${Math.min(percentage, 100)}%` }}
             />
           </div>
-          <p className="mt-1 text-xs text-gray-400">{percentage}% used</p>
+          <p className="mt-2 text-xs font-medium text-text-secondary text-right">{percentage}% used</p>
         </div>
       )}
-    </div>
+    </GlassCard>
   );
 }
 
@@ -89,92 +101,116 @@ export default function DashboardPage() {
   const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS['free'];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-6xl">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Welcome back, {orgData?.name ?? 'there'} 👋
-        </h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Here&apos;s an overview of your chatbot knowledge base.
-        </p>
-      </div>
-
-      {/* Plan badge */}
-      <div className="flex items-center gap-2">
-        <span className="badge-blue capitalize">{plan} plan</span>
-        {plan === 'free' && (
-          <span className="text-xs text-gray-400">
-            Upgrade for more documents and queries
-          </span>
-        )}
-      </div>
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col md:flex-row md:items-end justify-between gap-4"
+      >
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-bold tracking-tight text-text-primary">
+              Welcome back, {orgData?.name ?? 'there'}
+            </h1>
+            <span className="badge-blue capitalize border-primary/20 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full text-xs font-semibold">{plan}</span>
+          </div>
+          <p className="text-base text-text-secondary">
+            Here's what's happening with your AI knowledge base today.
+          </p>
+        </div>
+        <button className="btn-primary !px-5 !py-2.5 text-sm whitespace-nowrap self-start md:self-auto">
+          + New Knowledge
+        </button>
+      </motion.div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
-          label="Documents"
+          label="Knowledge Base"
           value={docsData?.total ?? 0}
           max={limits.maxDocuments}
           icon={FileText}
-          color="bg-primary-600"
+          color="text-primary"
+          delay={0.1}
         />
         <StatCard
-          label="Queries this month"
+          label="API Requests (MTD)"
           value={statsData?.monthlyQueryCount ?? 0}
           max={limits.maxMonthlyQueries}
           icon={MessageSquare}
-          color="bg-emerald-600"
+          color="text-emerald-400"
+          delay={0.2}
         />
         <StatCard
-          label="Plan"
+          label="Current Tier"
           value={plan.toUpperCase()}
           icon={Zap}
-          color="bg-amber-500"
+          color="text-[#7C4DFF]"
+          delay={0.3}
         />
       </div>
 
       {/* Recent Documents */}
-      <div className="card">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-gray-900">Recent Documents</h2>
-          <a href="/dashboard/documents" className="text-sm font-medium text-primary-600 hover:text-primary-700">
-            View all
-          </a>
-        </div>
-
-        {!docsData?.items.length ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <FileText className="mb-3 h-12 w-12 text-gray-300" />
-            <p className="text-sm font-medium text-gray-700">No documents yet</p>
-            <p className="mt-1 text-xs text-gray-400">
-              Upload your first document to start building your knowledge base
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {docsData.items.map((doc) => (
-              <div key={doc._id} className="flex items-center justify-between py-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100">
-                    <FileText className="h-4 w-4 text-gray-500" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-gray-800">{doc.title}</p>
-                    <p className="text-xs uppercase text-gray-400">{doc.sourceType}</p>
-                  </div>
-                </div>
-                <div className="ml-4 flex items-center gap-3">
-                  {doc.chunkCount > 0 && (
-                    <span className="text-xs text-gray-400">{doc.chunkCount} chunks</span>
-                  )}
-                  <DocumentStatusBadge status={doc.status} />
-                </div>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <GlassCard className="p-0 overflow-hidden">
+          <div className="flex items-center justify-between border-b border-border bg-surface/50 px-6 py-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Search className="h-4 w-4" />
               </div>
-            ))}
+              <h2 className="text-lg font-bold text-text-primary">Recent Knowledge Base Updates</h2>
+            </div>
+            <a href="/dashboard/documents" className="text-sm font-semibold text-primary hover:text-primary-accent transition-colors">
+              View all
+            </a>
           </div>
-        )}
-      </div>
+
+          {!docsData?.items.length ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface border border-border shadow-inner mb-4">
+                <FileText className="h-8 w-8 text-text-secondary/50" />
+              </div>
+              <p className="text-base font-bold text-text-primary">No knowledge synced yet</p>
+              <p className="mt-2 text-sm text-text-secondary max-w-sm mx-auto">
+                Upload your first document or connect an integration to start building your AI agent's brain.
+              </p>
+              <button className="btn-secondary mt-6 text-sm">Upload Document</button>
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {docsData.items.map((doc) => (
+                <div key={doc._id} className="flex items-center justify-between px-6 py-4 hover:bg-surface/50 transition-colors group cursor-pointer">
+                  <div className="flex min-w-0 items-center gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface border border-border group-hover:border-primary/30 transition-colors">
+                      <FileText className="h-5 w-5 text-text-secondary group-hover:text-primary transition-colors" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-text-primary group-hover:text-primary transition-colors">{doc.title}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-[10px] font-bold tracking-wider uppercase text-text-secondary">{doc.sourceType}</p>
+                        <span className="text-text-secondary/30">•</span>
+                        <p className="text-xs text-text-secondary">Added just now</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="ml-4 flex items-center gap-4">
+                    {doc.chunkCount > 0 && (
+                      <span className="text-xs font-medium text-text-secondary hidden sm:inline-block">{doc.chunkCount} vector chunks</span>
+                    )}
+                    <DocumentStatusBadge status={doc.status} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </GlassCard>
+      </motion.div>
     </div>
   );
 }

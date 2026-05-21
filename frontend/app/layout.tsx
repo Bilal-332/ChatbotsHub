@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
+import { AnimatedBackground } from '@/components/shared/AnimatedBackground';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -11,19 +12,24 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'ChatbotsHub - AI Knowledge Chatbot SaaS',
+    default: 'ChatbotsHub - Enterprise AI Knowledge Platform',
     template: '%s | ChatbotsHub',
   },
   description:
-    'Upload documents and deploy AI-powered chatbots trained on your content. No code required.',
+    'Deploy futuristic AI-powered chatbots trained on your enterprise knowledge base.',
   robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable} style={{ scrollBehavior: 'smooth' }}>
+    <html lang="en" className={`${inter.variable} dark`} style={{ scrollBehavior: 'smooth' }}>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <AnimatedBackground />
+          <div className="relative z-10">
+            {children}
+          </div>
+        </Providers>
       </body>
     </html>
   );
