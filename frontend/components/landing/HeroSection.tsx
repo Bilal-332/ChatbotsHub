@@ -12,8 +12,8 @@ const HeroScene = dynamic(() => import('@/components/scenes/HeroScene'), {
 
 export function HeroSection() {
   return (
-    <section className="relative flex min-h-screen items-center overflow-hidden pt-16">
-      <div className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-16 px-6 py-24 lg:grid-cols-2 z-10">
+    <section className="relative flex min-h-screen items-center overflow-visible pt-16">
+      <div className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-16 px-6 py-24 lg:grid-cols-2 z-10 overflow-visible">
         
         {/* ── Left: Copy ─────────────────────────────────── */}
         <div className="flex flex-col">
@@ -78,7 +78,7 @@ export function HeroSection() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, delay: 0.4 }}
-          className="hidden h-[600px] w-full lg:block relative"
+          className="hidden h-[600px] w-full lg:block relative overflow-visible"
           aria-hidden
         >
           {/* Subtle glow behind the 3D scene */}

@@ -7,6 +7,7 @@ import type { OrgStats, Paginated, Document } from '@/types/index';
 import { PLAN_DISPLAY } from '@/lib/constants';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 const PLAN_LIMITS: Record<string, { maxDocuments: number; maxMonthlyQueries: number }> = {
   free: { maxDocuments: 3, maxMonthlyQueries: 200 },
@@ -120,9 +121,9 @@ export default function DashboardPage() {
             Here's what's happening with your AI knowledge base today.
           </p>
         </div>
-        <button className="btn-primary !px-5 !py-2.5 text-sm whitespace-nowrap self-start md:self-auto">
-          + New Knowledge
-        </button>
+        <Link href="/dashboard/documents" className="btn-primary !px-5 !py-2.5 text-sm whitespace-nowrap self-start md:self-auto">
+  + New Knowledge
+</Link>
       </motion.div>
 
       {/* Stats grid */}

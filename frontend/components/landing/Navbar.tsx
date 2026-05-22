@@ -50,7 +50,7 @@ export function Navbar() {
             Capabilities
           </a>
           <a
-            href="#"
+            href="#dashboard-preview"
             className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
           >
             Enterprise
@@ -93,7 +93,7 @@ export function Navbar() {
               <a href="#features" className="text-sm font-medium text-text-primary" onClick={() => setMenuOpen(false)}>
                 Platform
               </a>
-              <a href="#" className="text-sm font-medium text-text-primary" onClick={() => setMenuOpen(false)}>
+              <a href="#dashboard-preview" className="text-sm font-medium text-text-primary" onClick={() => setMenuOpen(false)}>
                 Enterprise
               </a>
               <div className="flex flex-col gap-3 pt-4 border-t border-border">

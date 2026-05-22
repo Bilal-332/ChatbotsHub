@@ -5,9 +5,10 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Float } from '@react-three/drei';
 import * as THREE from 'three';
 
-const P600 = '#4f46e5';
-const P500 = '#6366f1';
-const P300 = '#a5b4fc';
+const P600 = '#00E5FF';
+const P500 = '#7C4DFF';
+const P300 = '#00FF9D';
+const P100 = '#FF3EC9';
 const WHITE = '#ffffff';
 
 // ── Step 1: Floating document ──────────────────────────────────────────────
@@ -18,24 +19,24 @@ function DocumentMesh() {
         {/* Document body */}
         <mesh castShadow>
           <boxGeometry args={[1.35, 1.75, 0.07]} />
-          <meshStandardMaterial color={WHITE} roughness={0.3} />
+          <meshStandardMaterial color={WHITE} roughness={0.25} metalness={0.1} />
         </mesh>
         {/* Header bar */}
         <mesh position={[0, 0.62, 0.042]}>
           <boxGeometry args={[0.9, 0.18, 0.01]} />
-          <meshStandardMaterial color={P600} />
+          <meshStandardMaterial color={P600} emissive={P600} emissiveIntensity={0.6} />
         </mesh>
         {/* Lines */}
         {[0.33, 0.1, -0.13, -0.36, -0.59].map((y, i) => (
           <mesh key={i} position={[0, y, 0.042]}>
             <boxGeometry args={[i === 0 ? 0.7 : 0.95, 0.055, 0.01]} />
-            <meshStandardMaterial color="#e0e7ff" />
+            <meshStandardMaterial color="#e0e7ff" emissive={P300} emissiveIntensity={0.2} />
           </mesh>
         ))}
         {/* Bottom accent */}
         <mesh position={[-0.35, -0.78, 0.042]}>
           <boxGeometry args={[0.25, 0.1, 0.01]} />
-          <meshStandardMaterial color={P300} />
+          <meshStandardMaterial color={P300} emissive={P300} emissiveIntensity={0.6} />
         </mesh>
       </group>
     </Float>
@@ -57,12 +58,12 @@ function ProcessingMesh() {
       {/* Wireframe cage */}
       <mesh>
         <icosahedronGeometry args={[0.9, 1]} />
-        <meshStandardMaterial color={P600} wireframe transparent opacity={0.6} />
+        <meshStandardMaterial color={P600} emissive={P600} emissiveIntensity={1.1} wireframe transparent opacity={0.75} />
       </mesh>
       {/* Inner core */}
       <mesh>
         <sphereGeometry args={[0.38, 16, 16]} />
-        <meshStandardMaterial color={P600} emissive={P600} emissiveIntensity={0.7} />
+        <meshStandardMaterial color={P600} emissive={P600} emissiveIntensity={1.3} />
       </mesh>
       {/* Orbiting nodes */}
       <group ref={orbitRef}>
@@ -71,7 +72,7 @@ function ProcessingMesh() {
           return (
             <mesh key={i} position={[Math.cos(a) * 1.3, 0, Math.sin(a) * 1.3]}>
               <sphereGeometry args={[0.1, 8, 8]} />
-              <meshStandardMaterial color={P300} emissive={P300} emissiveIntensity={0.6} />
+              <meshStandardMaterial color={P100} emissive={P100} emissiveIntensity={1.1} />
             </mesh>
           );
         })}
@@ -101,16 +102,16 @@ function ApiMesh() {
     <group>
       <mesh ref={ring1Ref}>
         <torusGeometry args={[1.0, 0.07, 8, 40]} />
-        <meshStandardMaterial color={P600} transparent opacity={0.85} />
+        <meshStandardMaterial color={P600} emissive={P600} emissiveIntensity={0.9} transparent opacity={0.9} />
       </mesh>
       <mesh ref={ring2Ref}>
         <torusGeometry args={[1.0, 0.045, 8, 40]} />
-        <meshStandardMaterial color={P500} transparent opacity={0.55} />
+        <meshStandardMaterial color={P500} emissive={P500} emissiveIntensity={0.8} transparent opacity={0.7} />
       </mesh>
       {/* Center node */}
       <mesh>
         <sphereGeometry args={[0.28, 16, 16]} />
-        <meshStandardMaterial color={P600} emissive={P600} emissiveIntensity={0.6} />
+        <meshStandardMaterial color={P100} emissive={P100} emissiveIntensity={1.0} />
       </mesh>
     </group>
   );
@@ -131,8 +132,10 @@ export default function StepScene({ step }: StepSceneProps) {
       gl={{ alpha: true, antialias: true, powerPreference: 'low-power' }}
       style={{ background: 'transparent' }}
     >
-      <ambientLight intensity={0.85} />
-      <pointLight position={[3, 3, 3]} intensity={1.1} />
+      <ambientLight intensity={0.35} />
+      <pointLight position={[3, 3, 3]} intensity={1.8} color={P600} />
+      <pointLight position={[-2, -2, -1]} intensity={1.2} color={P500} />
+      <pointLight position={[0, 2, -2]} intensity={1.1} color={P100} />
       <Scene />
     </Canvas>
   );

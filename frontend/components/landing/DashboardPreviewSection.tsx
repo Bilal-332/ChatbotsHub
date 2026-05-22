@@ -26,7 +26,7 @@ const STATUS_CLASS: Record<string, string> = {
 
 export function DashboardPreviewSection() {
   return (
-    <section className="relative overflow-hidden py-32 z-10">
+    <section id="dashboard-preview" className="relative overflow-hidden py-32 z-10">
       <div className="relative mx-auto max-w-7xl px-6">
         {/* Header */}
         <div className="mb-20 flex flex-col items-center text-center">

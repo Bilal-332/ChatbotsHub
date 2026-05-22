@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Knowledge Base', href: '/dashboard/documents', icon: FileText },
-  //{ name: 'API & Integration', href: '/dashboard/api', icon: Code2 },
+  { name: 'API & Integration', href: '/dashboard/api', icon: Code2 },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
