@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-export type UserRole = 'admin' | 'member';
+export type UserRole = 'admin' | 'member' | 'super_admin';
 export type DocumentSourceType = 'pdf' | 'docx' | 'txt';
 export type DocumentStatus = 'pending' | 'processing' | 'ready' | 'failed';
 export type PlanName = 'free' | 'starter' | 'pro';

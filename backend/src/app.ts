@@ -14,6 +14,7 @@ import { authRouter } from '@modules/auth/auth.routes';
 import { organizationRouter } from '@modules/organizations/organization.routes';
 import { documentRouter } from '@modules/documents/document.routes';
 import { chatRouter } from '@modules/chat/chat.routes';
+import { adminRouter } from '@modules/admin/admin.routes';
 
 export function createApp(): express.Application {
   const app = express();
@@ -77,6 +78,7 @@ export function createApp(): express.Application {
 
   // ─── API Routes ─────────────────────────────────────────────────────────────
   app.use('/api/auth', authRouter);
+  app.use('/api/admin', adminRouter);
   app.use('/api/organizations', organizationRouter);
   app.use('/api/documents', documentRouter);
   app.use('/api/chat', chatRouter);

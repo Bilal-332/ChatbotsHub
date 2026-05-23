@@ -21,7 +21,7 @@ export interface Paginated<T> {
 }
 
 // ─── Domain Types ────────────────────────────────────────────────────────────
-export type UserRole = 'admin' | 'member';
+export type UserRole = 'admin' | 'member' | 'super_admin';
 export type PlanName = 'free' | 'starter' | 'pro';
 export type DocumentStatus = 'pending' | 'processing' | 'ready' | 'failed';
 export type DocumentSourceType = 'pdf' | 'docx' | 'txt';
@@ -31,6 +31,37 @@ export interface User {
   email: string;
   role: UserRole;
   organizationId: string;
+}
+
+export interface AdminOrganization {
+  _id: string;
+  name: string;
+  slug: string;
+  plan: PlanName;
+  isActive: boolean;
+  apiKey: string;
+  monthlyQueryCount: number;
+  queryResetAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminUser {
+  _id: string;
+  email: string;
+  role: UserRole;
+  organizationId: string;
+  isActive: boolean;
+  lastLoginAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  organization?: {
+    _id: string;
+    name: string;
+    slug: string;
+    plan: PlanName;
+    isActive: boolean;
+  } | null;
 }
 
 export interface Organization {

@@ -48,7 +48,7 @@ const userSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ['admin', 'member'],
+      enum: ['admin', 'member', 'super_admin'],
       default: 'admin',
     },
     organizationId: {

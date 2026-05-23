@@ -8,7 +8,7 @@ import { AnimatedBackground } from '@/components/shared/AnimatedBackground';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, impersonation, stopImpersonation } = useAuthStore();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -25,7 +25,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <AnimatedBackground />
       <Sidebar />
       <main className="min-w-0 flex-1 overflow-auto relative z-10">
-        <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8 lg:py-12">{children}</div>
+        <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8 lg:py-12">
+          {impersonation && (
+            <div className="mb-6 rounded-2xl border border-status-warning/30 bg-status-warning/10 px-4 py-3 text-sm text-text-primary flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-semibold">Impersonation active</p>
+                <p className="text-xs text-text-secondary">You're viewing this workspace as a super admin.</p>
+              </div>
+              <button
+                className="btn-secondary !px-4 !py-2"
+                onClick={() => {
+                  stopImpersonation();
+                  router.push('/dashboard/admin/organizations');
+                }}
+              >
+                Exit Access
+              </button>
+            </div>
+          )}
+          {children}
+        </div>
       </main>
     </div>
   );

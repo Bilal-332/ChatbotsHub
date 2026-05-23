@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bot, LayoutDashboard, FileText, Settings, LogOut, Menu, X, Code2 } from 'lucide-react';
+import { Bot, LayoutDashboard, FileText, Settings, LogOut, Menu, X, Code2, Shield, Users, Building2 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
@@ -13,6 +13,11 @@ const navigation = [
   { name: 'Knowledge Base', href: '/dashboard/documents', icon: FileText },
   { name: 'API & Integration', href: '/dashboard/api', icon: Code2 },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+];
+
+const adminNavigation = [
+  { name: 'Organizations', href: '/dashboard/admin/organizations', icon: Building2 },
+  { name: 'Users', href: '/dashboard/admin/users', icon: Users },
 ];
 
 export function Sidebar() {
@@ -67,6 +72,41 @@ export function Sidebar() {
             </Link>
           );
         })}
+
+        {user?.role === 'super_admin' && (
+          <div className="pt-4 mt-4 border-t border-border space-y-2">
+            <div className="flex items-center gap-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-text-secondary">
+              <Shield className="h-3.5 w-3.5" />
+              Super Admin
+            </div>
+            {adminNavigation.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="relative group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all"
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="sidebar-admin-active-pill"
+                      className="absolute inset-0 rounded-xl bg-status-warning/10 border border-status-warning/20"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  {isActive && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-status-warning rounded-r-full" />
+                  )}
+                  <item.icon className={`h-5 w-5 shrink-0 z-10 transition-colors ${isActive ? 'text-status-warning' : 'text-text-secondary group-hover:text-text-primary'}`} />
+                  <span className={`z-10 transition-colors ${isActive ? 'text-text-primary font-semibold' : 'text-text-secondary group-hover:text-text-primary'}`}>
+                    {item.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </nav>
 
       {/* User footer */}

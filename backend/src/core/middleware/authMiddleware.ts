@@ -31,6 +31,10 @@ export function requireRole(...roles: UserRole[]) {
     if (!user) {
       throw new UnauthorizedError();
     }
+    if (user.role === 'super_admin') {
+      next();
+      return;
+    }
     if (!roles.includes(user.role)) {
       throw new ForbiddenError('Insufficient permissions');
     }
