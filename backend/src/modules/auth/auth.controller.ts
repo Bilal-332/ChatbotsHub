@@ -31,8 +31,8 @@ export class AuthController {
   }
 
   async me(req: Request, res: Response): Promise<void> {
-    const { userId } = (req as AuthenticatedRequest).user;
-    const user = await authService.getMe(userId);
+    const { userId, organizationId, role } = (req as AuthenticatedRequest).user;
+    const user = await authService.getMe(userId, organizationId, role);
     sendSuccess(res, user);
   }
 }

@@ -243,17 +243,35 @@ export class AuthService {
 
     return generateTokenPair({
       userId: user._id.toString(),
-      organizationId: user.organizationId.toString(),
+      organizationId: payload.organizationId,
       role: user.role,
     });
   }
 
-  async getMe(userId: string): Promise<Omit<IUser, 'passwordHash'>> {
+  async getMe(
+    userId: string,
+    organizationId?: string,
+    role?: UserRole,
+  ): Promise<Omit<IUser, 'passwordHash'>> {
     const user = await User.findOne({ _id: userId, isActive: true })
       .populate('organizationId', 'name slug plan settings')
       .lean();
 
     if (!user) throw new NotFoundError('User');
+
+    if (role === 'super_admin' && organizationId) {
+      const org = await Organization.findById(organizationId)
+        .select('name slug plan settings')
+        .lean();
+
+      if (!org) throw new NotFoundError('Organization');
+
+      return {
+        ...(user as unknown as Omit<IUser, 'passwordHash'>),
+        organizationId: org as any,
+      };
+    }
+
     return user as unknown as Omit<IUser, 'passwordHash'>;
   }
 }

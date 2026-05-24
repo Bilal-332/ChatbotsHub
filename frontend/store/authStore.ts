@@ -14,6 +14,7 @@ interface AuthState {
   } | null;
   setAuth: (user: User, accessToken: string, refreshToken: string) => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
+  updateUser: (user: User) => void;
   startImpersonation: (tokens: { accessToken: string; refreshToken: string }, organizationId: string) => void;
   stopImpersonation: () => void;
   logout: () => void;
@@ -33,6 +34,8 @@ export const useAuthStore = create<AuthState>()(
 
       setTokens: (accessToken, refreshToken) =>
         set({ accessToken, refreshToken }),
+
+      updateUser: (user) => set({ user }),
 
       startImpersonation: (tokens, organizationId) =>
         set((state) => {

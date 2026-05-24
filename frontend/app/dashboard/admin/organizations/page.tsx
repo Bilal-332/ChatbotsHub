@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { AxiosError } from 'axios';
-import { adminApi } from '@/lib/api';
+import { adminApi, authApi } from '@/lib/api';
 import type { AdminOrganization, Paginated } from '@/types/index';
 import { PLAN_DISPLAY } from '@/lib/constants';
 import { GlassCard } from '@/components/shared/GlassCard';
@@ -27,7 +27,7 @@ function slugify(value: string): string {
 export default function AdminOrganizationsPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { startImpersonation } = useAuthStore();
+  const { startImpersonation, updateUser } = useAuthStore();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -97,8 +97,13 @@ export default function AdminOrganizationsPage() {
 
   const { mutate: impersonate, isPending: isImpersonating } = useMutation({
     mutationFn: (orgId: string) => adminApi.impersonateOrganization(orgId),
-    onSuccess: (res, orgId) => {
+    onSuccess: async (res, orgId) => {
       startImpersonation(res.data.data.tokens, orgId);
+      const me = await authApi.me();
+      updateUser(me.data.data);
+      queryClient.removeQueries({ queryKey: ['organization'] });
+      queryClient.removeQueries({ queryKey: ['org-stats'] });
+      queryClient.removeQueries({ queryKey: ['documents'] });
       toast.success('Access granted');
       router.push('/dashboard');
     },
