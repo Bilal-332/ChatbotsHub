@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { AxiosError } from 'axios';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
-import { Loader2, Bot } from 'lucide-react';
+import { Loader2, Bot, Eye, EyeOff } from 'lucide-react';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { AnimatedBackground } from '@/components/shared/AnimatedBackground';
@@ -19,6 +19,7 @@ export default function LoginPage() {
   const { setAuth } = useAuthStore();
 
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
 
   const { mutate: login, isPending } = useMutation({
     mutationFn: () => authApi.login(formData),
@@ -110,21 +111,32 @@ export default function LoginPage() {
                   <label htmlFor="password" className="block text-sm font-medium text-text-primary">
                     Password
                   </label>
-                  <Link href="#" className="text-xs font-medium text-primary hover:text-primary-accent transition-colors">
+                  <Link href="/auth/forgot-password" className="text-xs font-medium text-primary hover:text-primary-accent transition-colors">
                     Forgot password?
                   </Link>
                 </div>
-                <input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="input"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) => setFormData((p) => ({ ...p, password: e.target.value }))}
-                  disabled={isPending}
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    className="input pr-12"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={(e) => setFormData((p) => ({ ...p, password: e.target.value }))}
+                    disabled={isPending}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-2 flex items-center text-text-secondary hover:text-text-primary transition-colors"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    disabled={isPending}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
 
               <button type="submit" className="btn-primary w-full !py-3 text-base mt-2" disabled={isPending}>

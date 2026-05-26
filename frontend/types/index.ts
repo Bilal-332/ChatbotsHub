@@ -76,6 +76,7 @@ export interface Organization {
   settings: {
     chatbotName: string;
     welcomeMessage: string;
+    noAnswerMessage: string;
     primaryColor: string;
   };
   createdAt: string;

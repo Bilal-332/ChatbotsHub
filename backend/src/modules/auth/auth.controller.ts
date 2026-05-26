@@ -30,6 +30,22 @@ export class AuthController {
     sendSuccess(res, { tokens }, 'Tokens refreshed');
   }
 
+  async forgotPassword(req: Request, res: Response): Promise<void> {
+    const { email } = req.body as { email: string };
+    await authService.requestPasswordReset(email);
+    sendSuccess(res, null, 'If an account exists, a reset code has been sent');
+  }
+
+  async resetPassword(req: Request, res: Response): Promise<void> {
+    const { email, code, password } = req.body as {
+      email: string;
+      code: string;
+      password: string;
+    };
+    await authService.resetPassword(email, code, password);
+    sendSuccess(res, null, 'Password reset successful');
+  }
+
   async me(req: Request, res: Response): Promise<void> {
     const { userId, organizationId, role } = (req as AuthenticatedRequest).user;
     const user = await authService.getMe(userId, organizationId, role);

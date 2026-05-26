@@ -10,6 +10,10 @@ export interface IUser extends Document {
   passwordHash: string;
   authProvider: 'password' | 'google';
   googleId?: string;
+  resetOtpHash?: string;
+  resetOtpExpiresAt?: Date;
+  resetOtpAttempts?: number;
+  resetOtpRequestedAt?: Date;
   role: UserRole;
   organizationId: Types.ObjectId;
   isActive: boolean;
@@ -45,6 +49,23 @@ const userSchema = new Schema<IUser>(
       type: String,
       unique: true,
       sparse: true,
+    },
+    resetOtpHash: {
+      type: String,
+      select: false,
+    },
+    resetOtpExpiresAt: {
+      type: Date,
+      select: false,
+    },
+    resetOtpAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+    resetOtpRequestedAt: {
+      type: Date,
+      select: false,
     },
     role: {
       type: String,

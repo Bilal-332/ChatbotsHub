@@ -37,6 +37,12 @@ export const authApi = {
     apiClient.post<ApiSuccess<{ tokens: TokenPair }>>('/auth/refresh', { refreshToken }),
 
   me: () => apiClient.get<ApiSuccess<User>>('/auth/me'),
+
+  forgotPassword: (email: string) =>
+    apiClient.post<ApiSuccess<null>>('/auth/forgot-password', { email }),
+
+  resetPassword: (payload: { email: string; code: string; password: string }) =>
+    apiClient.post<ApiSuccess<null>>('/auth/reset-password', payload),
 };
 
 // ─── Organizations ───────────────────────────────────────────────────────────

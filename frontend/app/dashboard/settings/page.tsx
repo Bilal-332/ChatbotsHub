@@ -21,6 +21,7 @@ export default function SettingsPage() {
   const [formData, setFormData] = useState({
     chatbotName: '',
     welcomeMessage: '',
+    noAnswerMessage: '',
     primaryColor: '#5B6CFF', // Default to new PRIMARY
   });
 
@@ -29,6 +30,7 @@ export default function SettingsPage() {
     setFormData({
       chatbotName: org.settings.chatbotName,
       welcomeMessage: org.settings.welcomeMessage,
+      noAnswerMessage: org.settings.noAnswerMessage,
       primaryColor: org.settings.primaryColor,
     });
     setInitialized(true);
@@ -105,6 +107,21 @@ export default function SettingsPage() {
                 maxLength={200}
                 placeholder="Hi there! How can I help you today?"
               />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-text-primary">No-Answer Message</label>
+              <textarea
+                className="input max-w-xl resize-none"
+                rows={3}
+                value={formData.noAnswerMessage}
+                onChange={(e) => setFormData((p) => ({ ...p, noAnswerMessage: e.target.value }))}
+                maxLength={300}
+                placeholder="Sorry, I do not have that information yet."
+              />
+              <p className="mt-1 text-xs text-text-secondary">
+                Shown when the assistant cannot find an answer in your documents.
+              </p>
             </div>
 
             <div>

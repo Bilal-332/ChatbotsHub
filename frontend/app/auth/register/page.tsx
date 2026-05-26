@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { AxiosError } from 'axios';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
-import { Loader2, Bot, Sparkles } from 'lucide-react';
+import { Loader2, Bot, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { AnimatedBackground } from '@/components/shared/AnimatedBackground';
@@ -40,6 +40,8 @@ export default function RegisterPage() {
     organizationName: '',
     organizationSlug: '',
   });
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
@@ -194,17 +196,28 @@ export default function RegisterPage() {
                 <label htmlFor="password" className="mb-2 block text-sm font-medium text-text-primary">
                   Password
                 </label>
-                <input
-                  id="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  className="input"
-                  placeholder="Min. 8 chars, incl. uppercase & number"
-                  value={formData.password}
-                  onChange={(e) => setFormData((p) => ({ ...p, password: e.target.value }))}
-                  disabled={isPending}
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    required
+                    className="input pr-12"
+                    placeholder="Min. 8 chars, incl. uppercase & number"
+                    value={formData.password}
+                    onChange={(e) => setFormData((p) => ({ ...p, password: e.target.value }))}
+                    disabled={isPending}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-2 flex items-center text-text-secondary hover:text-text-primary transition-colors"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    disabled={isPending}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
 
               <button type="submit" className="btn-primary w-full !py-3 text-base mt-2" disabled={isPending}>

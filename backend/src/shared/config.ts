@@ -26,6 +26,12 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_MS: z.string().default('900000'),
   RATE_LIMIT_MAX_REQUESTS: z.string().default('100'),
   CHAT_RATE_LIMIT_MAX: z.string().default('30'),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.string().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
+  SMTP_SECURE: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -71,6 +77,14 @@ export const config = {
     windowMs: parseInt(parsed.data.RATE_LIMIT_WINDOW_MS, 10),
     maxRequests: parseInt(parsed.data.RATE_LIMIT_MAX_REQUESTS, 10),
     chatMax: parseInt(parsed.data.CHAT_RATE_LIMIT_MAX, 10),
+  },
+  smtp: {
+    host: parsed.data.SMTP_HOST,
+    port: parsed.data.SMTP_PORT ? parseInt(parsed.data.SMTP_PORT, 10) : undefined,
+    user: parsed.data.SMTP_USER,
+    pass: parsed.data.SMTP_PASS,
+    from: parsed.data.SMTP_FROM,
+    secure: parsed.data.SMTP_SECURE === 'true',
   },
   isProduction: parsed.data.NODE_ENV === 'production',
 } as const;

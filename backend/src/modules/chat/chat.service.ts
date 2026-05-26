@@ -17,6 +17,19 @@ const MEMORY_TTL_MS = 1000 * 60 * 60;
 const NO_KNOWLEDGE_MESSAGE =
   'I could not find enough relevant information in your uploaded documents to answer that.';
 
+function resolveNoKnowledgeMessage(customMessage?: string): string {
+  const trimmed = customMessage?.trim();
+  return trimmed ? trimmed : NO_KNOWLEDGE_MESSAGE;
+}
+
+async function fetchNoKnowledgeMessage(organizationId: string): Promise<string> {
+  const org = await Organization.findById(organizationId)
+    .select('settings.noAnswerMessage')
+    .lean();
+
+  return resolveNoKnowledgeMessage(org?.settings?.noAnswerMessage);
+}
+
 interface ConversationMemory {
   history: ChatHistoryMessage[];
   updatedAt: number;
@@ -312,7 +325,8 @@ export class ChatService {
     const questionContext = contextualizeQuestion(question, state);
 
     if (questionContext.shouldAnswerDirectly) {
-      const directAnswer = questionContext.directAnswer ?? NO_KNOWLEDGE_MESSAGE;
+      const directAnswer = questionContext.directAnswer
+        ?? (await fetchNoKnowledgeMessage(organizationId));
       this.saveTurn(memoryKey, question, directAnswer);
 
       return {
@@ -362,8 +376,9 @@ export class ChatService {
     const relevantChunks = chunks.filter((c) => c.score >= MIN_RELEVANCE_SCORE);
 
     if (relevantChunks.length === 0) {
+      const fallbackMessage = await fetchNoKnowledgeMessage(organizationId);
       return {
-        answer: 'I could not find enough relevant information in your uploaded documents to answer that.',
+        answer: fallbackMessage,
         tokensUsed: 0,
         sourceChunks: 0,
         hasContext: false,
@@ -376,8 +391,9 @@ export class ChatService {
 
     // 5. If confidence is low, stay within organization scope and avoid generic fallback.
     if (confidence < MIN_CONFIDENCE_FOR_RAG) {
+      const fallbackMessage = await fetchNoKnowledgeMessage(organizationId);
       return {
-        answer: 'I could not find enough relevant information in your uploaded documents to answer that.',
+        answer: fallbackMessage,
         tokensUsed: 0,
         sourceChunks: 0,
         hasContext: false,

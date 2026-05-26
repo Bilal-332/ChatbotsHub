@@ -14,6 +14,7 @@ export interface IOrganization extends Document {
   settings: {
     chatbotName: string;
     welcomeMessage: string;
+    noAnswerMessage: string;
     primaryColor: string;
   };
   createdAt: Date;
@@ -69,6 +70,12 @@ const organizationSchema = new Schema<IOrganization>(
         type: String,
         default: 'Hello! How can I help you today?',
         maxlength: 200,
+      },
+      noAnswerMessage: {
+        type: String,
+        default:
+          'I could not find enough relevant information in your uploaded documents to answer that.',
+        maxlength: 300,
       },
       primaryColor: { type: String, default: '#6366f1', match: /^#[0-9A-Fa-f]{6}$/ },
     },

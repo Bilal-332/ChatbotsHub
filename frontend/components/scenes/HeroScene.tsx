@@ -2,14 +2,13 @@
 
 import { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Sphere, Trail, Html } from '@react-three/drei';
+import { Float, Sphere, Trail } from '@react-three/drei';
 import * as THREE from 'three';
 
 const PRIMARY = '#00E5FF';
 const ACCENT = '#7C4DFF';
 const HIGHLIGHT = '#00FF9D';
 const GLOW = '#FF3EC9';
-const BACKGROUND = '#050611';
 
 function ParticleRings() {
   const groupRef = useRef<THREE.Group>(null);
@@ -64,6 +63,59 @@ function ParticleRings() {
 function CoreNetwork() {
   const coreRef = useRef<THREE.Mesh>(null);
   const shellRef = useRef<THREE.Mesh>(null);
+  const gradientTexture = useMemo(() => {
+    const size = 256;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    const conic = (ctx as CanvasRenderingContext2D & {
+      createConicGradient?: (startAngle: number, x: number, y: number) => CanvasGradient;
+    }).createConicGradient;
+
+    if (conic) {
+      const gradient = conic.call(ctx, 0, size / 2, size / 2);
+      gradient.addColorStop(0, '#1E90FF');
+      gradient.addColorStop(0.18, '#00C8FF');
+      gradient.addColorStop(0.36, '#26F0A2');
+      gradient.addColorStop(0.54, '#FFE45C');
+      gradient.addColorStop(0.72, '#FF6EA9');
+      gradient.addColorStop(0.9, '#7C4DFF');
+      gradient.addColorStop(1, '#1E90FF');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+    } else {
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#1E90FF');
+      gradient.addColorStop(0.2, '#00C8FF');
+      gradient.addColorStop(0.4, '#26F0A2');
+      gradient.addColorStop(0.6, '#FFE45C');
+      gradient.addColorStop(0.8, '#FF6EA9');
+      gradient.addColorStop(1, '#7C4DFF');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+    }
+
+    const glow = ctx.createRadialGradient(
+      size / 2,
+      size / 2,
+      size * 0.1,
+      size / 2,
+      size / 2,
+      size * 0.6,
+    );
+    glow.addColorStop(0, 'rgba(255,255,255,0.95)');
+    glow.addColorStop(0.45, 'rgba(255,255,255,0.35)');
+    glow.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, size, size);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+  }, []);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
@@ -108,56 +160,19 @@ function CoreNetwork() {
       
       {/* Solid Center */}
       <Sphere args={[0.5, 32, 32]}>
-        <meshStandardMaterial
-          color={BACKGROUND}
-          emissive={PRIMARY}
-          emissiveIntensity={1.6}
-          roughness={0.1}
-          metalness={0.9}
+        <meshPhysicalMaterial
+          color="#ffffff"
+          map={gradientTexture ?? undefined}
+          emissive="#ffffff"
+          emissiveMap={gradientTexture ?? undefined}
+          emissiveIntensity={0.85}
+          roughness={0.16}
+          metalness={0.08}
+          clearcoat={0.92}
+          clearcoatRoughness={0.1}
+          toneMapped={false}
         />
       </Sphere>
-
-      <Html
-        center
-        transform
-        position={[0.28, 0, 0]}
-        distanceFactor={5}
-        style={{ pointerEvents: 'none' }}
-      >
-        <div
-          style={{
-            width: '56px',
-            height: '56px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '14px',
-            backgroundColor: 'rgba(91,108,255,0.18)',
-            border: '1px solid rgba(91,108,255,0.35)',
-            boxShadow: '0 0 28px rgba(91,108,255,0.45)',
-            backdropFilter: 'blur(6px)',
-          }}
-        >
-          <svg
-            width="50"
-            height="50"
-            viewBox="0 0 32 32"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-label="ChatbotsHub icon"
-          >
-            <rect x="1" y="1" width="30" height="30" rx="8" fill="rgba(91,108,255,0.18)" stroke="rgba(91,108,255,0.35)" />
-            <g transform="translate(4 4)" stroke="#5B6CFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 8V4H8" />
-              <rect width="16" height="12" x="4" y="8" rx="2" />
-              <path d="M2 14h2" />
-              <path d="M20 14h2" />
-              <path d="M15 13v2" />
-              <path d="M9 13v2" />
-            </g>
-          </svg>
-        </div>
-      </Html>
     </group>
   );
 }

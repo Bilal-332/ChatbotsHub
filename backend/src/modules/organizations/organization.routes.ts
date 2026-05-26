@@ -25,6 +25,7 @@ router.patch(
     body('name').optional().isString().trim().isLength({ min: 2, max: 100 }),
     body('settings.chatbotName').optional().isString().trim().isLength({ max: 50 }),
     body('settings.welcomeMessage').optional().isString().trim().isLength({ max: 200 }),
+    body('settings.noAnswerMessage').optional().isString().trim().isLength({ max: 300 }),
     body('settings.primaryColor')
       .optional()
       .matches(/^#[0-9A-Fa-f]{6}$/)

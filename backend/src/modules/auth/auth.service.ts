@@ -5,6 +5,8 @@ import { ConflictError, UnauthorizedError, NotFoundError } from '@shared/errors'
 import { OAuth2Client } from 'google-auth-library';
 import { config } from '@shared/config';
 import type { UserRole } from '@shared/types';
+import { sendPasswordResetOtp } from '@shared/mailer';
+import { createHash, randomInt } from 'crypto';
 
 export interface RegisterDto {
   email: string;
@@ -38,8 +40,22 @@ export interface AuthResult {
   };
 }
 
+const OTP_LENGTH = 6;
+const OTP_EXPIRY_MINUTES = 10;
+const OTP_MAX_ATTEMPTS = 5;
+
 export class AuthService {
   private googleClient = new OAuth2Client(config.google.clientId);
+
+  private generateOtp(): string {
+    const min = 10 ** (OTP_LENGTH - 1);
+    const max = 10 ** OTP_LENGTH - 1;
+    return String(randomInt(min, max + 1));
+  }
+
+  private hashOtp(otp: string): string {
+    return createHash('sha256').update(otp).digest('hex');
+  }
 
   private async verifyGoogleToken(idToken: string): Promise<{ email: string; googleId: string }> {
     const ticket = await this.googleClient.verifyIdToken({
@@ -246,6 +262,69 @@ export class AuthService {
       organizationId: payload.organizationId,
       role: user.role,
     });
+  }
+
+  async requestPasswordReset(email: string): Promise<void> {
+    const user = await User.findOne({ email: email.toLowerCase(), isActive: true });
+    if (!user || user.authProvider !== 'password') return;
+
+    const otp = this.generateOtp();
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + OTP_EXPIRY_MINUTES * 60 * 1000);
+
+    await User.updateOne(
+      { _id: user._id },
+      {
+        resetOtpHash: this.hashOtp(otp),
+        resetOtpExpiresAt: expiresAt,
+        resetOtpAttempts: 0,
+        resetOtpRequestedAt: now,
+      },
+    );
+
+    await sendPasswordResetOtp(user.email, otp);
+  }
+
+  async resetPassword(email: string, code: string, password: string): Promise<void> {
+    const user = await User.findOne({ email: email.toLowerCase(), isActive: true })
+      .select('+passwordHash +resetOtpHash +resetOtpExpiresAt +resetOtpAttempts');
+
+    if (!user || user.authProvider !== 'password') {
+      throw new UnauthorizedError('Invalid or expired reset code');
+    }
+
+    const { resetOtpHash, resetOtpExpiresAt, resetOtpAttempts = 0 } = user;
+    if (!resetOtpHash || !resetOtpExpiresAt) {
+      throw new UnauthorizedError('Invalid or expired reset code');
+    }
+
+    if (resetOtpAttempts >= OTP_MAX_ATTEMPTS) {
+      throw new UnauthorizedError('Invalid or expired reset code');
+    }
+
+    if (resetOtpExpiresAt.getTime() < Date.now()) {
+      throw new UnauthorizedError('Invalid or expired reset code');
+    }
+
+    if (this.hashOtp(code) !== resetOtpHash) {
+      await User.updateOne(
+        { _id: user._id },
+        { resetOtpAttempts: resetOtpAttempts + 1 },
+      );
+      throw new UnauthorizedError('Invalid or expired reset code');
+    }
+
+    const passwordHash = await hashPassword(password);
+    await User.updateOne(
+      { _id: user._id },
+      {
+        passwordHash,
+        resetOtpHash: undefined,
+        resetOtpExpiresAt: undefined,
+        resetOtpAttempts: 0,
+        resetOtpRequestedAt: undefined,
+      },
+    );
   }
 
   async getMe(

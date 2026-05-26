@@ -46,6 +46,25 @@ router.post(
 );
 
 router.post(
+  '/forgot-password',
+  authRateLimiter,
+  [body('email').isEmail().normalizeEmail(), validateRequest],
+  authController.forgotPassword.bind(authController),
+);
+
+router.post(
+  '/reset-password',
+  authRateLimiter,
+  [
+    body('email').isEmail().normalizeEmail(),
+    body('code').isString().matches(/^\d{6}$/),
+    passwordStrength,
+    validateRequest,
+  ],
+  authController.resetPassword.bind(authController),
+);
+
+router.post(
   '/google/register',
   authRateLimiter,
   [
