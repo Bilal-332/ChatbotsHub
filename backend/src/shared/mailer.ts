@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
 import { config } from '@shared/config';
 import { AppError } from '@shared/errors';
+import { logger } from '@shared/logger';
 
 const OTP_EXPIRY_MINUTES = 10;
 
@@ -22,7 +23,7 @@ export async function sendPasswordResetOtp(to: string, otp: string): Promise<voi
   const resend = ensureResendClient();
   const from = config.resend.from as string;
 
-  await resend.emails.send({
+  const result = await resend.emails.send({
     from,
     to,
     subject: 'Your ChatbotsHub password reset code',
@@ -33,4 +34,22 @@ export async function sendPasswordResetOtp(to: string, otp: string): Promise<voi
       <p>If you did not request this, you can safely ignore this email.</p>
     `,
   });
+
+  if (result.error) {
+    const error = result.error as
+      | string
+      | { message?: string; name?: string; statusCode?: number; code?: string };
+    const message = typeof error === 'string'
+      ? error
+      : error.message ?? JSON.stringify(error);
+    logger.error(`Resend email send failed: ${message}`);
+    if (typeof error !== 'string') {
+      if (error.name) logger.error(`Resend error name: ${error.name}`);
+      if (error.code) logger.error(`Resend error code: ${error.code}`);
+      if (typeof error.statusCode === 'number') {
+        logger.error(`Resend error status: ${error.statusCode}`);
+      }
+    }
+    throw new AppError('Failed to send reset email', 502, 'EMAIL_SEND_FAILED');
+  }
 }
