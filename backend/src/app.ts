@@ -37,7 +37,7 @@ export function createApp(): express.Application {
         // Allow requests with no origin (mobile apps, curl, Postman)
         if (!origin) return callback(null, true);
 
-        const allowedOrigins = [config.frontendUrl, 'null'];
+        const allowedOrigins = [config.frontendUrl, ...config.frontendUrls, 'null'];
         if (allowedOrigins.includes(origin) || !config.isProduction) {
           callback(null, true);
         } else {

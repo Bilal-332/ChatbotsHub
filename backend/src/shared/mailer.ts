@@ -19,6 +19,9 @@ function ensureTransporter(): nodemailer.Transporter {
     port,
     secure: config.smtp.secure || port === 465,
     auth: { user, pass },
+    connectionTimeout: config.smtp.timeoutMs,
+    greetingTimeout: config.smtp.timeoutMs,
+    socketTimeout: config.smtp.timeoutMs,
   });
 
   return transporter;

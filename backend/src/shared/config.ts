@@ -7,6 +7,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.string().default('5000'),
   FRONTEND_URL: z.string().url(),
+  FRONTEND_URLS: z.string().optional(),
   MONGODB_URI: z.string().min(1),
   GOOGLE_CLIENT_ID: z.string().min(1),
   JWT_ACCESS_SECRET: z.string().min(32),
@@ -32,6 +33,7 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().optional(),
   SMTP_SECURE: z.string().optional(),
+  SMTP_TIMEOUT_MS: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -45,6 +47,9 @@ export const config = {
   nodeEnv: parsed.data.NODE_ENV,
   port: parseInt(parsed.data.PORT, 10),
   frontendUrl: parsed.data.FRONTEND_URL,
+  frontendUrls: parsed.data.FRONTEND_URLS
+    ? parsed.data.FRONTEND_URLS.split(',').map((value) => value.trim()).filter(Boolean)
+    : [],
   google: {
     clientId: parsed.data.GOOGLE_CLIENT_ID,
   },
@@ -85,6 +90,9 @@ export const config = {
     pass: parsed.data.SMTP_PASS,
     from: parsed.data.SMTP_FROM,
     secure: parsed.data.SMTP_SECURE === 'true',
+    timeoutMs: parsed.data.SMTP_TIMEOUT_MS
+      ? parseInt(parsed.data.SMTP_TIMEOUT_MS, 10)
+      : 10_000,
   },
   isProduction: parsed.data.NODE_ENV === 'production',
 } as const;
