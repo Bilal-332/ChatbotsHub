@@ -77,12 +77,12 @@ function CoreNetwork() {
 
     if (conic) {
       const gradient = conic.call(ctx, 0, size / 2, size / 2);
-      gradient.addColorStop(0, '#1E90FF');
-      gradient.addColorStop(0.18, '#00C8FF');
-      gradient.addColorStop(0.36, '#26F0A2');
-      gradient.addColorStop(0.54, '#FFE45C');
-      gradient.addColorStop(0.72, '#FF6EA9');
-      gradient.addColorStop(0.9, '#7C4DFF');
+      gradient.addColorStop(0, '#1489fe');
+      gradient.addColorStop(0.18, '#03aad8');
+      gradient.addColorStop(0.36, '#01de89');
+      gradient.addColorStop(0.54, '#efcd23');
+      gradient.addColorStop(0.72, '#f53682');
+      gradient.addColorStop(0.9, '#6633f2');
       gradient.addColorStop(1, '#1E90FF');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, size, size);
