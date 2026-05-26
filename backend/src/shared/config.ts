@@ -27,6 +27,8 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_MS: z.string().default('900000'),
   RATE_LIMIT_MAX_REQUESTS: z.string().default('100'),
   CHAT_RATE_LIMIT_MAX: z.string().default('30'),
+  RESEND_API_KEY: z.string().optional(),
+  RESEND_FROM: z.string().optional(),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.string().optional(),
   SMTP_USER: z.string().optional(),
@@ -82,6 +84,10 @@ export const config = {
     windowMs: parseInt(parsed.data.RATE_LIMIT_WINDOW_MS, 10),
     maxRequests: parseInt(parsed.data.RATE_LIMIT_MAX_REQUESTS, 10),
     chatMax: parseInt(parsed.data.CHAT_RATE_LIMIT_MAX, 10),
+  },
+  resend: {
+    apiKey: parsed.data.RESEND_API_KEY,
+    from: parsed.data.RESEND_FROM,
   },
   smtp: {
     host: parsed.data.SMTP_HOST,

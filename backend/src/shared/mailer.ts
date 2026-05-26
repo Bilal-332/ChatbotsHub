@@ -1,37 +1,28 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { config } from '@shared/config';
 import { AppError } from '@shared/errors';
 
 const OTP_EXPIRY_MINUTES = 10;
 
-let transporter: nodemailer.Transporter | null = null;
+let resendClient: Resend | null = null;
 
-function ensureTransporter(): nodemailer.Transporter {
-  if (transporter) return transporter;
+function ensureResendClient(): Resend {
+  if (resendClient) return resendClient;
 
-  const { host, port, user, pass, from } = config.smtp;
-  if (!host || !port || !user || !pass || !from) {
+  const { apiKey, from } = config.resend;
+  if (!apiKey || !from) {
     throw new AppError('Email service not configured', 500, 'EMAIL_NOT_CONFIGURED');
   }
 
-  transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: config.smtp.secure || port === 465,
-    auth: { user, pass },
-    connectionTimeout: config.smtp.timeoutMs,
-    greetingTimeout: config.smtp.timeoutMs,
-    socketTimeout: config.smtp.timeoutMs,
-  });
-
-  return transporter;
+  resendClient = new Resend(apiKey);
+  return resendClient;
 }
 
 export async function sendPasswordResetOtp(to: string, otp: string): Promise<void> {
-  const transport = ensureTransporter();
-  const from = config.smtp.from as string;
+  const resend = ensureResendClient();
+  const from = config.resend.from as string;
 
-  await transport.sendMail({
+  await resend.emails.send({
     from,
     to,
     subject: 'Your ChatbotsHub password reset code',
