@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600&family=Noto+Sans+Arabic:wght@400;600&display=swap');
 
 @layer base {
   :root {
@@ -10,7 +10,7 @@
   }
 
   html {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-inter), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
@@ -18,7 +18,7 @@
 
   body {
     @apply bg-background text-text-primary;
-    background-image: 
+    background-image:
       radial-gradient(circle at 50% 0%, rgba(91, 108, 255, 0.15) 0%, transparent 50%),
       radial-gradient(circle at 80% 80%, rgba(124, 77, 255, 0.1) 0%, transparent 50%);
     background-attachment: fixed;
@@ -29,7 +29,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter Tight', system-ui, sans-serif;
+    font-family: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif;
     letter-spacing: -0.02em;
   }
   
@@ -105,5 +105,37 @@
 
   .badge-gray {
     @apply badge bg-surface text-text-secondary border-border;
+  }
+
+  .font-arabic {
+    font-family: 'Noto Sans Arabic', 'Inter', system-ui, sans-serif;
+    direction: rtl;
+    text-align: right;
+  }
+
+  .font-urdu {
+    font-family: 'Noto Nastaliq Urdu', 'Noto Sans Arabic', system-ui, sans-serif;
+    direction: rtl;
+    text-align: right;
+  }
+}
+
+@keyframes ambient-drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(30px, 20px); }
+}
+
+@keyframes ambient-drift-reverse {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-20px, -30px); }
+}
+
+@layer utilities {
+  .animate-ambient-drift {
+    animation: ambient-drift 20s ease-in-out infinite;
+  }
+
+  .animate-ambient-drift-reverse {
+    animation: ambient-drift-reverse 15s ease-in-out infinite;
   }
 }

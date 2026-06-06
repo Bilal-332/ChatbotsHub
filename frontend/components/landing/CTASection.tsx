@@ -50,10 +50,10 @@ export function CTASection() {
             <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link
-            href="/auth/login"
+            href="#contact"
             className="btn-secondary !px-8 !py-4 text-base font-semibold"
           >
-            Contact Sales
+            Contact Us
           </Link>
         </div>
 

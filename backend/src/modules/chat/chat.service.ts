@@ -3,6 +3,13 @@ import { searchSimilarChunks } from '@core/vector/qdrantClient';
 import { generateChatCompletion, ChatHistoryMessage } from '@core/ai/chatService';
 import { classifyQuery } from '@core/ai/queryClassifier';
 import { rerankChunks, calculateRetrievalConfidence } from '@core/ai/retrievalRanker';
+import {
+  resolveResponseLanguage,
+  translateText,
+  type SupportedLanguage,
+} from '@core/ai/languageService';
+import { memoryService } from './memory.service';
+import type { ConversationState } from './conversation.model';
 import { AppError } from '@shared/errors';
 import { Document as DocumentModel } from '@modules/documents/document.model';
 import { Organization } from '@modules/organizations/organization.model';
@@ -11,8 +18,6 @@ const MIN_RELEVANCE_SCORE = 0.28;
 const RETRIEVAL_TOP_K = 8;
 const RERANK_TOP_N = 5;
 const MIN_CONFIDENCE_FOR_RAG = 0.34;
-const MAX_MEMORY_TURNS = 8;
-const MEMORY_TTL_MS = 1000 * 60 * 60;
 
 const NO_KNOWLEDGE_MESSAGE =
   'I could not find enough relevant information in your uploaded documents to answer that.';
@@ -22,30 +27,16 @@ function resolveNoKnowledgeMessage(customMessage?: string): string {
   return trimmed ? trimmed : NO_KNOWLEDGE_MESSAGE;
 }
 
-async function fetchNoKnowledgeMessage(organizationId: string): Promise<string> {
-  const org = await Organization.findById(organizationId)
-    .select('settings.noAnswerMessage')
-    .lean();
-
-  return resolveNoKnowledgeMessage(org?.settings?.noAnswerMessage);
-}
-
-interface ConversationMemory {
-  history: ChatHistoryMessage[];
-  updatedAt: number;
-  state: ConversationState;
-}
-
-interface ConversationState {
-  currentDay?: string;
-  lastDoctorName?: string;
-  lastPatientName?: string;
-}
-
 interface QuestionContext {
   resolvedQuestion: string;
   shouldAnswerDirectly: boolean;
   directAnswer?: string;
+}
+
+interface OrgChatSettings {
+  chatbotName?: string;
+  noAnswerMessage?: string;
+  language: SupportedLanguage;
 }
 
 function buildGreetingMessage(chatbotName?: string): string {
@@ -262,52 +253,16 @@ export interface ChatResponse {
 }
 
 export class ChatService {
-  private readonly memoryStore = new Map<string, ConversationMemory>();
+  private async getOrgSettings(organizationId: string): Promise<OrgChatSettings> {
+    const org = await Organization.findById(organizationId)
+      .select('settings.chatbotName settings.noAnswerMessage settings.language')
+      .lean();
 
-  private buildMemoryKey(organizationId: string, conversationId?: string): string | undefined {
-    const sanitizedConversationId = conversationId?.trim();
-    if (!sanitizedConversationId) return undefined;
-    return `${organizationId}:${sanitizedConversationId}`;
-  }
-
-  private pruneMemory(): void {
-    const now = Date.now();
-    for (const [key, value] of this.memoryStore.entries()) {
-      if (now - value.updatedAt > MEMORY_TTL_MS) {
-        this.memoryStore.delete(key);
-      }
-    }
-  }
-
-  private getHistory(memoryKey?: string): ChatHistoryMessage[] {
-    if (!memoryKey) return [];
-    this.pruneMemory();
-    return this.memoryStore.get(memoryKey)?.history ?? [];
-  }
-
-  private getState(memoryKey?: string): ConversationState {
-    if (!memoryKey) return {};
-    this.pruneMemory();
-    return this.memoryStore.get(memoryKey)?.state ?? {};
-  }
-
-  private saveTurn(memoryKey: string | undefined, question: string, answer: string): void {
-    if (!memoryKey) return;
-
-    const existing = this.memoryStore.get(memoryKey)?.history ?? [];
-    const userTurn: ChatHistoryMessage = { role: 'user', content: question };
-    const assistantTurn: ChatHistoryMessage = { role: 'assistant', content: answer };
-    const nextHistory = [
-      ...existing,
-      userTurn,
-      assistantTurn,
-    ].slice(-MAX_MEMORY_TURNS * 2);
-
-    this.memoryStore.set(memoryKey, {
-      history: nextHistory,
-      state: extractStateFromConversation(nextHistory),
-      updatedAt: Date.now(),
-    });
+    return {
+      chatbotName: org?.settings?.chatbotName,
+      noAnswerMessage: org?.settings?.noAnswerMessage,
+      language: (org?.settings?.language as SupportedLanguage) ?? 'auto',
+    };
   }
 
   async query(params: ChatQuery): Promise<ChatResponse> {
@@ -317,17 +272,35 @@ export class ChatService {
       throw new AppError('Question cannot be empty', 400, 'INVALID_INPUT');
     }
 
-    const memoryKey = this.buildMemoryKey(organizationId, conversationId);
-    const currentHistory = this.getHistory(memoryKey);
-    const currentState = this.getState(memoryKey);
+    const orgSettings = await this.getOrgSettings(organizationId);
+    const languageContext = resolveResponseLanguage(question, orgSettings.language);
+
+    const currentHistory = await memoryService.getHistory(organizationId, conversationId);
+    const currentState = await memoryService.getState(organizationId, conversationId);
     const mergedState = extractStateFromConversation(currentHistory);
-    const state = { ...currentState, ...mergedState };
+    const state: ConversationState = { ...currentState, ...mergedState };
+
     const questionContext = contextualizeQuestion(question, state);
 
     if (questionContext.shouldAnswerDirectly) {
-      const directAnswer = questionContext.directAnswer
-        ?? (await fetchNoKnowledgeMessage(organizationId));
-      this.saveTurn(memoryKey, question, directAnswer);
+      let directAnswer = questionContext.directAnswer
+        ?? resolveNoKnowledgeMessage(orgSettings.noAnswerMessage);
+
+      if (languageContext.responseLanguage !== 'en') {
+        directAnswer = await translateText(
+          directAnswer,
+          languageContext.responseLanguage,
+          'en',
+        );
+      }
+
+      await memoryService.saveTurn(
+        organizationId,
+        conversationId,
+        question,
+        directAnswer,
+        { preferredLanguage: languageContext.responseLanguage },
+      );
 
       return {
         answer: directAnswer,
@@ -340,12 +313,22 @@ export class ChatService {
     const queryType = classifyQuery(question);
 
     if (queryType === 'greeting') {
-      const organization = await Organization.findById(organizationId)
-        .select('settings.chatbotName')
-        .lean();
+      let answer = buildGreetingMessage(orgSettings.chatbotName);
+
+      if (languageContext.responseLanguage !== 'en') {
+        answer = await translateText(answer, languageContext.responseLanguage, 'en');
+      }
+
+      await memoryService.saveTurn(
+        organizationId,
+        conversationId,
+        question,
+        answer,
+        { preferredLanguage: languageContext.responseLanguage },
+      );
 
       return {
-        answer: buildGreetingMessage(organization?.settings?.chatbotName),
+        answer,
         tokensUsed: 0,
         sourceChunks: 0,
         hasContext: false,
@@ -358,25 +341,42 @@ export class ChatService {
     });
 
     if (readyDocumentCount === 0) {
+      let answer = 'No documents are ready in this workspace yet. Upload and process documents first.';
+      if (languageContext.responseLanguage !== 'en') {
+        answer = await translateText(answer, languageContext.responseLanguage, 'en');
+      }
       return {
-        answer: 'No documents are ready in this workspace yet. Upload and process documents first.',
+        answer,
         tokensUsed: 0,
         sourceChunks: 0,
         hasContext: false,
       };
     }
 
-    // 1. Embed the user's question
-    const questionVector = await generateEmbedding(questionContext.resolvedQuestion);
+    // Translate question to English for embedding + retrieval when needed
+    let resolvedQuestion = questionContext.resolvedQuestion;
+    if (languageContext.detected !== 'en') {
+      resolvedQuestion = await translateText(
+        questionContext.resolvedQuestion,
+        'en',
+        languageContext.detected,
+      );
+    }
 
-    // 2. Retrieve relevant chunks from Qdrant
+    const questionVector = await generateEmbedding(resolvedQuestion);
     const chunks = await searchSimilarChunks(questionVector, organizationId, RETRIEVAL_TOP_K);
-
-    // 3. Filter by relevance score threshold
     const relevantChunks = chunks.filter((c) => c.score >= MIN_RELEVANCE_SCORE);
 
     if (relevantChunks.length === 0) {
-      const fallbackMessage = await fetchNoKnowledgeMessage(organizationId);
+      let fallbackMessage = resolveNoKnowledgeMessage(orgSettings.noAnswerMessage);
+      if (languageContext.responseLanguage !== 'en') {
+        fallbackMessage = await translateText(
+          fallbackMessage,
+          languageContext.responseLanguage,
+          'en',
+        );
+      }
+      await memoryService.saveTurn(organizationId, conversationId, question, fallbackMessage);
       return {
         answer: fallbackMessage,
         tokensUsed: 0,
@@ -385,13 +385,19 @@ export class ChatService {
       };
     }
 
-    // 4. Re-rank chunks with lexical + semantic signal.
-    const rankedChunks = rerankChunks(questionContext.resolvedQuestion, relevantChunks, RERANK_TOP_N);
+    const rankedChunks = rerankChunks(resolvedQuestion, relevantChunks, RERANK_TOP_N);
     const confidence = calculateRetrievalConfidence(rankedChunks);
 
-    // 5. If confidence is low, stay within organization scope and avoid generic fallback.
     if (confidence < MIN_CONFIDENCE_FOR_RAG) {
-      const fallbackMessage = await fetchNoKnowledgeMessage(organizationId);
+      let fallbackMessage = resolveNoKnowledgeMessage(orgSettings.noAnswerMessage);
+      if (languageContext.responseLanguage !== 'en') {
+        fallbackMessage = await translateText(
+          fallbackMessage,
+          languageContext.responseLanguage,
+          'en',
+        );
+      }
+      await memoryService.saveTurn(organizationId, conversationId, question, fallbackMessage);
       return {
         answer: fallbackMessage,
         tokensUsed: 0,
@@ -400,9 +406,8 @@ export class ChatService {
       };
     }
 
-    // 6. Generate completion using the best retrieved context.
     const history = [...currentHistory, { role: 'user', content: question } as ChatHistoryMessage];
-    const { answer, tokensUsed } = await generateChatCompletion(questionContext.resolvedQuestion, {
+    const { answer, tokensUsed } = await generateChatCompletion(resolvedQuestion, {
       mode: 'knowledge',
       history,
       contextChunks: rankedChunks.map((chunk) => ({
@@ -411,10 +416,30 @@ export class ChatService {
         section: chunk.section,
         pageNumber: chunk.pageNumber,
       })),
+      responseLanguage: languageContext.responseLanguage,
     });
 
-    const finalAnswer = sanitizeAnswer(answer);
-    this.saveTurn(memoryKey, question, finalAnswer);
+    let finalAnswer = sanitizeAnswer(answer);
+
+    // Ensure answer is in the user's language when auto-detect is non-English
+    if (languageContext.responseLanguage !== 'en') {
+      finalAnswer = await translateText(
+        finalAnswer,
+        languageContext.responseLanguage,
+        'en',
+      );
+    }
+
+    await memoryService.saveTurn(
+      organizationId,
+      conversationId,
+      question,
+      finalAnswer,
+      {
+        preferredLanguage: languageContext.responseLanguage,
+        lastTopic: resolvedQuestion.slice(0, 120),
+      },
+    );
 
     return {
       answer: finalAnswer,

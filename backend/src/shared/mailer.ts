@@ -53,3 +53,45 @@ export async function sendPasswordResetOtp(to: string, otp: string): Promise<voi
     throw new AppError('Failed to send reset email', 502, 'EMAIL_SEND_FAILED');
   }
 }
+
+export interface ContactFormPayload {
+  name: string;
+  email: string;
+  message: string;
+  company?: string;
+}
+
+export async function sendContactFormEmail(payload: ContactFormPayload): Promise<void> {
+  const resend = ensureResendClient();
+  const from = config.resend.from as string;
+  const to = config.contact.email;
+
+  const companyLine = payload.company ? `\nCompany: ${payload.company}` : '';
+
+  const result = await resend.emails.send({
+    from,
+    to,
+    replyTo: payload.email,
+    subject: `[ChatbotsHub Contact] Message from ${payload.name}`,
+    text: `Name: ${payload.name}\nEmail: ${payload.email}${companyLine}\n\nMessage:\n${payload.message}`,
+    html: `
+      <h2>New contact form submission</h2>
+      <p><strong>Name:</strong> ${payload.name}</p>
+      <p><strong>Email:</strong> <a href="mailto:${payload.email}">${payload.email}</a></p>
+      ${payload.company ? `<p><strong>Company:</strong> ${payload.company}</p>` : ''}
+      <hr />
+      <p>${payload.message.replace(/\n/g, '<br />')}</p>
+    `,
+  });
+
+  if (result.error) {
+    const error = result.error as
+      | string
+      | { message?: string; name?: string; statusCode?: number; code?: string };
+    const message = typeof error === 'string'
+      ? error
+      : error.message ?? JSON.stringify(error);
+    logger.error(`Resend contact email failed: ${message}`);
+    throw new AppError('Failed to send message. Please try again later.', 502, 'EMAIL_SEND_FAILED');
+  }
+}

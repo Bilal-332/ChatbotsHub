@@ -24,8 +24,8 @@ export default function LoginPage() {
   const { mutate: login, isPending } = useMutation({
     mutationFn: () => authApi.login(formData),
     onSuccess: (res) => {
-      const { user, tokens } = res.data.data;
-      setAuth(user, tokens.accessToken, tokens.refreshToken);
+      const { user, tokens, planExpiryWarning } = res.data.data;
+      setAuth(user, tokens.accessToken, tokens.refreshToken, planExpiryWarning ?? null);
       toast.success('Welcome back!');
       router.push('/dashboard');
     },
@@ -72,8 +72,8 @@ export default function LoginPage() {
             <div className="space-y-4">
               <GoogleAuthButton
                 mode="login"
-                onAuthenticated={({ user, tokens }) => {
-                  setAuth(user, tokens.accessToken, tokens.refreshToken);
+                onAuthenticated={({ user, tokens, planExpiryWarning }) => {
+                  setAuth(user, tokens.accessToken, tokens.refreshToken, planExpiryWarning ?? null);
                   toast.success('Welcome back!');
                   router.push('/dashboard');
                 }}

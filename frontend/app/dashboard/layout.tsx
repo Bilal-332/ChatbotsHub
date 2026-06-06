@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AnimatedBackground } from '@/components/shared/AnimatedBackground';
+import { PlanExpiryBanner } from '@/components/shared/PlanExpiryBanner';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
             </div>
           )}
+          <PlanExpiryBanner />
           {children}
         </div>
       </main>

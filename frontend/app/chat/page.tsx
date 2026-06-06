@@ -4,6 +4,8 @@ import { useState, useRef, useEffect, type FormEvent } from 'react';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
 import axios, { AxiosError } from 'axios';
 import { useSearchParams } from 'next/navigation';
+import { resolveAvatarUrl, isRtlText } from '@/lib/utils';
+import type { SupportedLanguage } from '@/types/index';
 
 interface Message {
   id: string;
@@ -16,13 +18,65 @@ interface ChatSettings {
   chatbotName: string;
   welcomeMessage: string;
   primaryColor: string;
+  avatarUrl?: string | null;
+  language?: SupportedLanguage;
 }
 
 function formatAssistantMessage(content: string): string[] {
   return content
-    .split(/(?<=[.!?])\s+(?=[A-Z0-9])/)
+    .split(/(?<=[.!?])\s+(?=[A-Z0-9\u0600-\u06FF])/)
     .map((sentence) => sentence.trim())
     .filter(Boolean);
+}
+
+function getMessageFontClass(content: string, language?: SupportedLanguage): string {
+  if (language === 'ur' || (language === 'auto' && isRtlText(content))) {
+    if (/[\u0679\u0688\u0691\u0698\u06AF\u06BA\u06BE\u06C1\u06D2]/.test(content)) {
+      return 'font-urdu';
+    }
+    return 'font-arabic';
+  }
+  if (language === 'ar') return 'font-arabic';
+  if (isRtlText(content)) return 'font-arabic';
+  return '';
+}
+
+function AvatarImage({
+  src,
+  alt,
+  fallbackColor,
+}: {
+  src?: string | null;
+  alt: string;
+  fallbackColor: string;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  if (src && !failed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        key={src}
+        src={src}
+        alt={alt}
+        className="h-full w-full object-cover"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <div
+      className="flex h-full w-full items-center justify-center"
+      style={{ backgroundColor: fallbackColor }}
+    >
+      <Bot className="h-4 w-4 text-white" />
+    </div>
+  );
 }
 
 export default function ChatWidgetPage() {
@@ -37,6 +91,7 @@ export default function ChatWidgetPage() {
     chatbotName: 'AI Assistant',
     welcomeMessage: 'Hello! I’m here to help. Ask me anything about your documents.',
     primaryColor: colorParam,
+    language: 'auto',
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -44,6 +99,7 @@ export default function ChatWidgetPage() {
   const conversationIdRef = useRef<string>('');
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api';
+  const avatarUrl = resolveAvatarUrl(settings.avatarUrl);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -52,7 +108,7 @@ export default function ChatWidgetPage() {
     let existing = null;
     try {
       existing = window.localStorage.getItem(storageKey);
-    } catch (e) {
+    } catch {
       console.warn('localStorage access denied, using temporary session.');
     }
 
@@ -69,40 +125,39 @@ export default function ChatWidgetPage() {
     conversationIdRef.current = generatedId;
     try {
       window.localStorage.setItem(storageKey, generatedId);
-    } catch (e) {
-      // Ignore exception in cross-origin iframes
+    } catch {
+      // Ignore in cross-origin iframes
     }
   }, [apiKey]);
 
   useEffect(() => {
-    // Load workspace settings via the public settings endpoint
     if (!apiKey) return;
     axios
-      .get<{ data: ChatSettings }>(`${API_BASE}/organizations/public?apiKey=${apiKey}`)
+      .get<{ success: boolean; data: ChatSettings }>(
+        `${API_BASE}/organizations/public?apiKey=${encodeURIComponent(apiKey)}`,
+      )
       .then((r) => {
-        if (r.data?.data) setSettings(r.data.data);
+        const data = r.data?.data;
+        if (!data) return;
+        setSettings((prev) => ({
+          ...prev,
+          ...data,
+          avatarUrl: data.avatarUrl?.trim() || null,
+        }));
       })
-      .catch(() => { }); // Silently fail – use defaults
+      .catch(() => {});
   }, [apiKey, API_BASE]);
 
   useEffect(() => {
     setMessages((prev) => {
       if (prev.length === 0) {
-        return [
-          {
-            id: 'welcome',
-            role: 'assistant',
-            content: settings.welcomeMessage,
-          },
-        ];
+        return [{ id: 'welcome', role: 'assistant', content: settings.welcomeMessage }];
       }
-
       if (prev[0].id === 'welcome' && prev[0].content !== settings.welcomeMessage) {
         const newMessages = [...prev];
         newMessages[0] = { ...newMessages[0], content: settings.welcomeMessage };
         return newMessages;
       }
-
       return prev;
     });
   }, [settings.welcomeMessage]);
@@ -116,12 +171,7 @@ export default function ChatWidgetPage() {
     const question = input.trim();
     if (!question || isLoading) return;
 
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: question,
-    };
-
+    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: question };
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
@@ -131,37 +181,22 @@ export default function ChatWidgetPage() {
         data: { answer: string; hasContext: boolean };
       }>(
         `${API_BASE}/chat/query`,
-        {
-          question,
-          conversationId: conversationIdRef.current || undefined,
-        },
+        { question, conversationId: conversationIdRef.current || undefined },
         { headers: { 'x-api-key': apiKey } },
       );
 
       const { answer, hasContext } = response.data.data;
-
       setMessages((prev) => [
         ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: answer,
-          hasContext,
-        },
+        { id: (Date.now() + 1).toString(), role: 'assistant', content: answer, hasContext },
       ]);
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMsg =
-        axiosError.response?.data?.message ??
-        'Sorry, I encountered an error. Please try again.';
-
+        axiosError.response?.data?.message ?? 'Sorry, I encountered an error. Please try again.';
       setMessages((prev) => [
         ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: errorMsg,
-        },
+        { id: (Date.now() + 1).toString(), role: 'assistant', content: errorMsg },
       ]);
     } finally {
       setIsLoading(false);
@@ -170,16 +205,16 @@ export default function ChatWidgetPage() {
   };
 
   const primaryColor = settings.primaryColor;
+  const inputRtl = settings.language === 'ar' || settings.language === 'ur';
 
   return (
     <div className="flex h-screen flex-col bg-white font-sans">
-      {/* Header */}
       <div
         className="flex items-center gap-3 px-4 py-3 shadow-sm"
         style={{ backgroundColor: primaryColor }}
       >
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
-          <Bot className="h-5 w-5 text-white" />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/20">
+          <AvatarImage src={avatarUrl} alt={settings.chatbotName} fallbackColor={primaryColor} />
         </div>
         <div>
           <p className="text-sm font-semibold text-white">{settings.chatbotName}</p>
@@ -188,57 +223,65 @@ export default function ChatWidgetPage() {
         <div className="ml-auto h-2 w-2 rounded-full bg-green-400" title="Online" />
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex items-start gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
-          >
-            {/* Avatar */}
+        {messages.map((msg) => {
+          const fontClass = getMessageFontClass(msg.content, settings.language);
+          return (
             <div
-              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${msg.role === 'user' ? 'bg-gray-200' : ''
-                }`}
-              style={msg.role === 'assistant' ? { backgroundColor: primaryColor } : {}}
+              key={msg.id}
+              className={`flex items-start gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
             >
-              {msg.role === 'user' ? (
-                <User className="h-4 w-4 text-gray-600" />
-              ) : (
-                <Bot className="h-4 w-4 text-white" />
-              )}
-            </div>
-
-            {/* Bubble */}
-            <div
-              className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${msg.role === 'user'
-                  ? 'rounded-tr-sm bg-gray-100 text-gray-800'
-                  : 'rounded-tl-sm text-white'
+              <div
+                className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full ${
+                  msg.role === 'user' ? 'bg-gray-200' : ''
                 }`}
-              style={msg.role === 'assistant' ? { backgroundColor: primaryColor } : {}}
-            >
-              {msg.role === 'assistant' ? (
-                <div className="space-y-2">
-                  {formatAssistantMessage(msg.content).map((sentence, index) => (
-                    <p key={`${msg.id}-${index}`} className="m-0">
-                      {sentence}
-                    </p>
-                  ))}
-                </div>
-              ) : (
-                msg.content
-              )}
-            </div>
-          </div>
-        ))}
+                style={msg.role === 'assistant' ? { backgroundColor: primaryColor } : {}}
+              >
+                {msg.role === 'user' ? (
+                  <User className="h-4 w-4 text-gray-600" />
+                ) : avatarUrl ? (
+                  <AvatarImage src={avatarUrl} alt="" fallbackColor={primaryColor} />
+                ) : (
+                  <Bot className="h-4 w-4 text-white" />
+                )}
+              </div>
 
-        {/* Typing indicator */}
+              <div
+                className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${fontClass} ${
+                  msg.role === 'user'
+                    ? 'rounded-tr-sm bg-gray-100 text-gray-800'
+                    : 'rounded-tl-sm text-white'
+                }`}
+                style={msg.role === 'assistant' ? { backgroundColor: primaryColor } : {}}
+                dir={fontClass ? 'rtl' : 'ltr'}
+              >
+                {msg.role === 'assistant' ? (
+                  <div className="space-y-2">
+                    {formatAssistantMessage(msg.content).map((sentence, index) => (
+                      <p key={`${msg.id}-${index}`} className="m-0">
+                        {sentence}
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  msg.content
+                )}
+              </div>
+            </div>
+          );
+        })}
+
         {isLoading && (
           <div className="flex items-start gap-2.5">
             <div
-              className="flex h-8 w-8 items-center justify-center rounded-full"
+              className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full"
               style={{ backgroundColor: primaryColor }}
             >
-              <Bot className="h-4 w-4 text-white" />
+              {avatarUrl ? (
+                <AvatarImage src={avatarUrl} alt="" fallbackColor={primaryColor} />
+              ) : (
+                <Bot className="h-4 w-4 text-white" />
+              )}
             </div>
             <div
               className="flex items-center gap-1 rounded-2xl rounded-tl-sm px-4 py-3"
@@ -253,7 +296,6 @@ export default function ChatWidgetPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <div className="border-t border-gray-100 px-4 py-3">
         <form onSubmit={sendMessage} className="flex items-center gap-2">
           <input
@@ -262,7 +304,10 @@ export default function ChatWidgetPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask a question..."
-            className="min-w-0 flex-1 rounded-full text-black border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none transition focus:border-transparent focus:ring-2"
+            dir={inputRtl || isRtlText(input) ? 'rtl' : 'ltr'}
+            className={`min-w-0 flex-1 rounded-full text-black border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none transition focus:border-transparent focus:ring-2 ${
+              inputRtl || isRtlText(input) ? 'font-arabic' : ''
+            }`}
             style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
             disabled={isLoading || !apiKey}
             maxLength={1000}

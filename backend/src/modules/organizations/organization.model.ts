@@ -8,6 +8,9 @@ export interface IOrganization extends Document {
   slug: string;
   apiKey: string;
   plan: PlanName;
+  planExpiresAt?: Date | null;
+  planExpiredAt?: Date | null;
+  expiredPlan?: 'starter' | 'pro' | null;
   isActive: boolean;
   monthlyQueryCount: number;
   queryResetAt: Date;
@@ -16,6 +19,8 @@ export interface IOrganization extends Document {
     welcomeMessage: string;
     noAnswerMessage: string;
     primaryColor: string;
+    avatarUrl?: string;
+    language: 'auto' | 'en' | 'ar' | 'ur';
   };
   createdAt: Date;
   updatedAt: Date;
@@ -51,6 +56,19 @@ const organizationSchema = new Schema<IOrganization>(
       enum: ['free', 'starter', 'pro'],
       default: 'free',
     },
+    planExpiresAt: {
+      type: Date,
+      default: null,
+    },
+    planExpiredAt: {
+      type: Date,
+      default: null,
+    },
+    expiredPlan: {
+      type: String,
+      enum: ['starter', 'pro'],
+      default: null,
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -78,6 +96,12 @@ const organizationSchema = new Schema<IOrganization>(
         maxlength: 300,
       },
       primaryColor: { type: String, default: '#6366f1', match: /^#[0-9A-Fa-f]{6}$/ },
+      avatarUrl: { type: String, default: '', maxlength: 500 },
+      language: {
+        type: String,
+        enum: ['auto', 'en', 'ar', 'ur'],
+        default: 'auto',
+      },
     },
   },
   {

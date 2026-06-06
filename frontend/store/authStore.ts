@@ -1,18 +1,20 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { User } from '@appTypes/index';
+import type { User, PlanExpiryWarning } from '@appTypes/index';
 
 interface AuthState {
   user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
+  planExpiryWarning: PlanExpiryWarning | null;
   impersonation: {
     accessToken: string;
     refreshToken: string;
     organizationId: string;
   } | null;
-  setAuth: (user: User, accessToken: string, refreshToken: string) => void;
+  setAuth: (user: User, accessToken: string, refreshToken: string, planExpiryWarning?: PlanExpiryWarning | null) => void;
+  setPlanExpiryWarning: (warning: PlanExpiryWarning | null) => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
   updateUser: (user: User) => void;
   startImpersonation: (tokens: { accessToken: string; refreshToken: string }, organizationId: string) => void;
@@ -27,10 +29,13 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       refreshToken: null,
       isAuthenticated: false,
+      planExpiryWarning: null,
       impersonation: null,
 
-      setAuth: (user, accessToken, refreshToken) =>
-        set({ user, accessToken, refreshToken, isAuthenticated: true, impersonation: null }),
+      setAuth: (user, accessToken, refreshToken, planExpiryWarning = null) =>
+        set({ user, accessToken, refreshToken, isAuthenticated: true, impersonation: null, planExpiryWarning }),
+
+      setPlanExpiryWarning: (planExpiryWarning) => set({ planExpiryWarning }),
 
       setTokens: (accessToken, refreshToken) =>
         set({ accessToken, refreshToken }),
@@ -82,6 +87,7 @@ export const useAuthStore = create<AuthState>()(
           refreshToken: null,
           isAuthenticated: false,
           impersonation: null,
+          planExpiryWarning: null,
         }),
     }),
     {
@@ -94,6 +100,10 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         impersonation: state.impersonation,
       }),
+      onRehydrateStorage: () => (state) => {
+        // Never restore expiry warning from storage — dashboard derives it from org API
+        if (state) state.planExpiryWarning = null;
+      },
     },
   ),
 );

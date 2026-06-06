@@ -25,6 +25,13 @@ export type UserRole = 'admin' | 'member' | 'super_admin';
 export type PlanName = 'free' | 'starter' | 'pro';
 export type DocumentStatus = 'pending' | 'processing' | 'ready' | 'failed';
 export type DocumentSourceType = 'pdf' | 'docx' | 'txt';
+export type SupportedLanguage = 'auto' | 'en' | 'ar' | 'ur';
+
+export interface PlanExpiryWarning {
+  expiredPlan: PlanName;
+  expiredAt: string;
+  message: string;
+}
 
 export interface User {
   id: string;
@@ -70,14 +77,20 @@ export interface Organization {
   slug: string;
   apiKey: string;
   plan: PlanName;
+  planExpiresAt?: string | null;
+  planExpiredAt?: string | null;
+  expiredPlan?: 'starter' | 'pro' | null;
   isActive: boolean;
   monthlyQueryCount: number;
   queryResetAt: string;
+  planExpiryWarning?: PlanExpiryWarning | null;
   settings: {
     chatbotName: string;
     welcomeMessage: string;
     noAnswerMessage: string;
     primaryColor: string;
+    avatarUrl?: string;
+    language: SupportedLanguage;
   };
   createdAt: string;
   updatedAt: string;
@@ -99,6 +112,7 @@ export interface OrgStats {
   plan: PlanName;
   monthlyQueryCount: number;
   queryResetAt: string;
+  planExpiryWarning?: PlanExpiryWarning | null;
   limits: {
     maxDocuments: number;
     maxMonthlyQueries: number;
@@ -114,6 +128,7 @@ export interface TokenPair {
 export interface AuthResult {
   tokens: TokenPair;
   user: User;
+  planExpiryWarning?: PlanExpiryWarning | null;
 }
 
 export interface ChatQueryResult {

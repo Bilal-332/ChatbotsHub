@@ -5,6 +5,7 @@ import { paginate, type PaginatedData } from '@shared/apiResponse';
 import { ConflictError, NotFoundError } from '@shared/errors';
 import { deleteOrganizationVectors } from '@core/vector/qdrantClient';
 import type { UserRole } from '@shared/types';
+import { assignPaidPlan } from '@modules/plans/plan.service';
 
 export interface ListQuery {
 	page: number;
@@ -93,11 +94,14 @@ export class AdminService {
 		const org = await Organization.create({
 			name: dto.name,
 			slug: dto.slug,
-			...(dto.plan && { plan: dto.plan }),
 			...(typeof dto.isActive === 'boolean' && { isActive: dto.isActive }),
 		});
 
-		return org;
+		if (dto.plan) {
+			await assignPaidPlan(org._id.toString(), dto.plan);
+		}
+
+		return (await Organization.findById(org._id)) as IOrganization;
 	}
 
 	async updateOrganization(id: string, dto: UpdateOrganizationDto): Promise<IOrganization> {
@@ -106,14 +110,19 @@ export class AdminService {
 			if (existing) throw new ConflictError(`Organization slug "${dto.slug}" is taken`);
 		}
 
+		const updateFields: Record<string, unknown> = {};
+		if (dto.name) updateFields.name = dto.name;
+		if (dto.slug) updateFields.slug = dto.slug;
+		if (typeof dto.isActive === 'boolean') updateFields.isActive = dto.isActive;
+
+		// Handle plan changes with expiry logic separately
+		if (dto.plan) {
+			await assignPaidPlan(id, dto.plan);
+		}
+
 		const org = await Organization.findByIdAndUpdate(
 			id,
-			{
-				...(dto.name && { name: dto.name }),
-				...(dto.slug && { slug: dto.slug }),
-				...(dto.plan && { plan: dto.plan }),
-				...(typeof dto.isActive === 'boolean' && { isActive: dto.isActive }),
-			},
+			updateFields,
 			{ new: true, runValidators: true },
 		);
 

@@ -16,6 +16,10 @@ declare global {
             client_id: string;
             callback: (response: { credential?: string }) => void;
             ux_mode?: 'popup' | 'redirect';
+            auto_select?: boolean;
+            cancel_on_tap_outside?: boolean;
+            context?: 'signin' | 'signup' | 'use';
+            itp_support?: boolean;
           }) => void;
           renderButton: (element: HTMLElement, options: Record<string, unknown>) => void;
         };
@@ -43,6 +47,10 @@ function loadGoogleScript(): Promise<void> {
   return new Promise((resolve, reject) => {
     const existing = document.getElementById(GOOGLE_SCRIPT_ID) as HTMLScriptElement | null;
     if (existing) {
+      if (window.google?.accounts?.id) {
+        resolve();
+        return;
+      }
       existing.addEventListener('load', () => resolve());
       existing.addEventListener('error', () => reject(new Error('Failed to load Google script')));
       return;
@@ -55,7 +63,7 @@ function loadGoogleScript(): Promise<void> {
     script.defer = true;
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('Failed to load Google script'));
-    document.body.appendChild(script);
+    document.head.appendChild(script);
   });
 }
 
@@ -67,7 +75,7 @@ export function GoogleAuthButton({
   onAuthenticated,
 }: GoogleAuthButtonProps) {
   const buttonRef = useRef<HTMLDivElement | null>(null);
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? '';
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim() ?? '';
   const isDisabled = disabled || !clientId;
 
   const mutation = useMutation({
@@ -130,13 +138,17 @@ export function GoogleAuthButton({
           client_id: clientId,
           callback: handleCredential,
           ux_mode: 'popup',
+          context: mode === 'register' ? 'signup' : 'signin',
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          itp_support: true,
         });
         window.google.accounts.id.renderButton(buttonRef.current, {
           theme: 'outline',
           size: 'large',
           shape: 'pill',
           text: 'continue_with',
-          width: '320',
+          width: Math.min(320, buttonRef.current.offsetWidth || 320),
         });
       })
       .catch(() => {
@@ -146,7 +158,7 @@ export function GoogleAuthButton({
     return () => {
       isMounted = false;
     };
-  }, [clientId, handleCredential, shouldRenderButton]);
+  }, [clientId, handleCredential, mode, shouldRenderButton]);
 
   if (isDisabled) {
     return (
@@ -156,5 +168,5 @@ export function GoogleAuthButton({
     );
   }
 
-  return <div ref={buttonRef} className="flex w-full justify-center" />;
+  return <div ref={buttonRef} className="flex w-full justify-center min-h-[44px]" />;
 }

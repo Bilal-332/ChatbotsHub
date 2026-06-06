@@ -7,6 +7,8 @@ import { config } from '@shared/config';
 import type { UserRole } from '@shared/types';
 import { sendPasswordResetOtp } from '@shared/mailer';
 import { createHash, randomInt } from 'crypto';
+import { checkAndApplyPlanExpiry, type PlanExpiryWarning } from '@modules/plans/plan.service';
+import { logger } from '@shared/logger';
 
 export interface RegisterDto {
   email: string;
@@ -38,6 +40,7 @@ export interface AuthResult {
     role: UserRole;
     organizationId: string;
   };
+  planExpiryWarning?: PlanExpiryWarning | null;
 }
 
 const OTP_LENGTH = 6;
@@ -45,7 +48,63 @@ const OTP_EXPIRY_MINUTES = 10;
 const OTP_MAX_ATTEMPTS = 5;
 
 export class AuthService {
-  private googleClient = new OAuth2Client(config.google.clientId);
+  private googleClient = new OAuth2Client();
+
+  private getGoogleAudiences(): string[] {
+    return config.google.audiences;
+  }
+
+  private async verifyGoogleToken(idToken: string): Promise<{ email: string; googleId: string }> {
+    const audiences = this.getGoogleAudiences();
+
+    if (audiences.length === 0) {
+      throw new UnauthorizedError('Google authentication is not configured');
+    }
+
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken,
+        audience: audiences.length === 1 ? audiences[0] : audiences,
+      });
+
+      const payload = ticket.getPayload();
+      if (!payload?.email || !payload.email_verified || !payload.sub) {
+        throw new UnauthorizedError('Google account could not be verified');
+      }
+
+      // aud/azp must match one of our configured web client IDs
+      const tokenClientId = payload.azp ?? payload.aud;
+      if (typeof tokenClientId === 'string' && !audiences.includes(tokenClientId)) {
+        logger.error(
+          `Google token client mismatch. Token aud/azp: ${tokenClientId}. ` +
+            `Configured audiences: ${audiences.join(', ')}. ` +
+            'Ensure backend GOOGLE_CLIENT_ID matches frontend NEXT_PUBLIC_GOOGLE_CLIENT_ID.',
+        );
+        throw new UnauthorizedError('Google authentication failed');
+      }
+
+      return {
+        email: payload.email.toLowerCase(),
+        googleId: payload.sub,
+      };
+    } catch (error) {
+      if (error instanceof UnauthorizedError) throw error;
+
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error(
+        `Google ID token verification failed: ${message}. ` +
+          `Configured audiences: ${audiences.join(', ')}`,
+      );
+
+      if (/recipient|audience|aud/i.test(message)) {
+        throw new UnauthorizedError(
+          'Google sign-in configuration mismatch. Contact support if this persists.',
+        );
+      }
+
+      throw new UnauthorizedError('Google authentication failed');
+    }
+  }
 
   private generateOtp(): string {
     const min = 10 ** (OTP_LENGTH - 1);
@@ -55,23 +114,6 @@ export class AuthService {
 
   private hashOtp(otp: string): string {
     return createHash('sha256').update(otp).digest('hex');
-  }
-
-  private async verifyGoogleToken(idToken: string): Promise<{ email: string; googleId: string }> {
-    const ticket = await this.googleClient.verifyIdToken({
-      idToken,
-      audience: config.google.clientId,
-    });
-
-    const payload = ticket.getPayload();
-    if (!payload?.email || !payload.email_verified || !payload.sub) {
-      throw new UnauthorizedError('Google account could not be verified');
-    }
-
-    return {
-      email: payload.email.toLowerCase(),
-      googleId: payload.sub,
-    };
   }
 
   async register(dto: RegisterDto): Promise<AuthResult> {
@@ -144,6 +186,8 @@ export class AuthService {
     // Update last login timestamp
     await User.findByIdAndUpdate(user._id, { lastLoginAt: new Date() });
 
+    const planExpiryWarning = await checkAndApplyPlanExpiry(user.organizationId.toString());
+
     const tokens = generateTokenPair({
       userId: user._id.toString(),
       organizationId: user.organizationId.toString(),
@@ -158,6 +202,7 @@ export class AuthService {
         role: user.role,
         organizationId: user.organizationId.toString(),
       },
+      planExpiryWarning,
     };
   }
 
@@ -226,6 +271,8 @@ export class AuthService {
 
     await User.findByIdAndUpdate(user._id, { lastLoginAt: new Date() });
 
+    const planExpiryWarning = await checkAndApplyPlanExpiry(user.organizationId.toString());
+
     const tokens = generateTokenPair({
       userId: user._id.toString(),
       organizationId: user.organizationId.toString(),
@@ -240,6 +287,7 @@ export class AuthService {
         role: user.role,
         organizationId: user.organizationId.toString(),
       },
+      planExpiryWarning,
     };
   }
 

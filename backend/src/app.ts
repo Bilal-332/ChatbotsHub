@@ -1,5 +1,6 @@
 import 'express-async-errors';
 import express from 'express';
+import path from 'path';
 import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
@@ -15,6 +16,7 @@ import { organizationRouter } from '@modules/organizations/organization.routes';
 import { documentRouter } from '@modules/documents/document.routes';
 import { chatRouter } from '@modules/chat/chat.routes';
 import { adminRouter } from '@modules/admin/admin.routes';
+import { contactRouter } from '@modules/contact/contact.routes';
 
 export function createApp(): express.Application {
   const app = express();
@@ -76,12 +78,24 @@ export function createApp(): express.Application {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  // ─── Static uploads (avatars) — allow cross-origin for widget on frontend ─
+  app.use(
+    '/uploads',
+    (_req, res, next) => {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      next();
+    },
+    express.static(path.resolve(config.upload.tempDir)),
+  );
+
   // ─── API Routes ─────────────────────────────────────────────────────────────
   app.use('/api/auth', authRouter);
   app.use('/api/admin', adminRouter);
   app.use('/api/organizations', organizationRouter);
   app.use('/api/documents', documentRouter);
   app.use('/api/chat', chatRouter);
+  app.use('/api/contact', contactRouter);
 
   // ─── 404 Handler ────────────────────────────────────────────────────────────
   app.use(notFoundHandler);

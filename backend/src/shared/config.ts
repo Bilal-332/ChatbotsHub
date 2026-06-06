@@ -10,6 +10,8 @@ const envSchema = z.object({
   FRONTEND_URLS: z.string().optional(),
   MONGODB_URI: z.string().min(1),
   GOOGLE_CLIENT_ID: z.string().min(1),
+  /** Comma-separated extra OAuth client IDs (e.g. prod + staging web clients) */
+  GOOGLE_ADDITIONAL_CLIENT_IDS: z.string().optional(),
   JWT_ACCESS_SECRET: z.string().min(32),
   JWT_REFRESH_SECRET: z.string().min(32),
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
@@ -36,6 +38,8 @@ const envSchema = z.object({
   SMTP_FROM: z.string().optional(),
   SMTP_SECURE: z.string().optional(),
   SMTP_TIMEOUT_MS: z.string().optional(),
+  CONTACT_EMAIL: z.string().email().optional(),
+  CONTACT_WHATSAPP: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -54,6 +58,13 @@ export const config = {
     : [],
   google: {
     clientId: parsed.data.GOOGLE_CLIENT_ID,
+    /** All client IDs accepted when verifying Google ID tokens */
+    audiences: [
+      parsed.data.GOOGLE_CLIENT_ID,
+      ...(parsed.data.GOOGLE_ADDITIONAL_CLIENT_IDS
+        ? parsed.data.GOOGLE_ADDITIONAL_CLIENT_IDS.split(',').map((v) => v.trim()).filter(Boolean)
+        : []),
+    ].filter((id, index, arr) => arr.indexOf(id) === index),
   },
   mongo: {
     uri: parsed.data.MONGODB_URI,
@@ -99,6 +110,10 @@ export const config = {
     timeoutMs: parsed.data.SMTP_TIMEOUT_MS
       ? parseInt(parsed.data.SMTP_TIMEOUT_MS, 10)
       : 10_000,
+  },
+  contact: {
+    email: parsed.data.CONTACT_EMAIL ?? 'bilalkhan.fullstack@gmail.com',
+    whatsapp: parsed.data.CONTACT_WHATSAPP ?? '+923329368599',
   },
   isProduction: parsed.data.NODE_ENV === 'production',
 } as const;

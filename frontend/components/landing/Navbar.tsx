@@ -50,6 +50,18 @@ export function Navbar() {
             Capabilities
           </a>
           <a
+            href="#pricing"
+            className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+          >
+            Pricing
+          </a>
+          <a
+            href="#contact"
+            className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+          >
+            Contact
+          </a>
+          <a
             href="#dashboard-preview"
             className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
           >
@@ -87,11 +99,14 @@ export function Navbar() {
             className="border-t border-border bg-surface/90 backdrop-blur-xl px-6 py-4 md:hidden overflow-hidden"
           >
             <div className="flex flex-col gap-4">
-              <a href="#how-it-works" className="text-sm font-medium text-text-primary" onClick={() => setMenuOpen(false)}>
+              <a href="#features" className="text-sm font-medium text-text-primary" onClick={() => setMenuOpen(false)}>
                 Capabilities
               </a>
-              <a href="#features" className="text-sm font-medium text-text-primary" onClick={() => setMenuOpen(false)}>
-                Platform
+              <a href="#pricing" className="text-sm font-medium text-text-primary" onClick={() => setMenuOpen(false)}>
+                Pricing
+              </a>
+              <a href="#contact" className="text-sm font-medium text-text-primary" onClick={() => setMenuOpen(false)}>
+                Contact
               </a>
               <a href="#dashboard-preview" className="text-sm font-medium text-text-primary" onClick={() => setMenuOpen(false)}>
                 Enterprise

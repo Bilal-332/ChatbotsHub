@@ -3,6 +3,7 @@ import { organizationController } from './organization.controller';
 import { authenticate, requireRole } from '@core/middleware/authMiddleware';
 import { body } from 'express-validator';
 import { validateRequest } from '@shared/validateRequest';
+import { avatarUpload } from './avatarMulterConfig';
 
 const router = Router();
 
@@ -30,9 +31,21 @@ router.patch(
       .optional()
       .matches(/^#[0-9A-Fa-f]{6}$/)
       .withMessage('Must be a valid hex color'),
+    body('settings.language')
+      .optional()
+      .isIn(['auto', 'en', 'ar', 'ur'])
+      .withMessage('Invalid language'),
+    body('settings.avatarUrl').optional().isString().trim().isLength({ max: 500 }),
     validateRequest,
   ],
   organizationController.updateOrganization.bind(organizationController),
+);
+
+router.post(
+  '/avatar',
+  requireRole('admin'),
+  avatarUpload.single('avatar'),
+  organizationController.uploadAvatar.bind(organizationController),
 );
 
 router.post(

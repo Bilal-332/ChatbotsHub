@@ -3,6 +3,7 @@ import { connectDatabase } from '@core/database/connection';
 import { initializeVectorStore } from '@core/vector/qdrantClient';
 import { config } from '@shared/config';
 import { logger } from '@shared/logger';
+import { startPlanExpiryScheduler } from '@modules/plans/plan.service';
 
 async function bootstrap(): Promise<void> {
   try {
@@ -11,6 +12,9 @@ async function bootstrap(): Promise<void> {
 
     // Initialize Qdrant collection
     await initializeVectorStore();
+
+    // Start plan expiry scheduler (hourly check)
+    startPlanExpiryScheduler();
 
     // Create and start Express app
     const app = createApp();

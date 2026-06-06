@@ -33,6 +33,7 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-[3.5rem] font-bold leading-[1.1] tracking-tight text-text-primary sm:text-[4.5rem]"
           >
+            <span className="sr-only">ChatbotsHub — </span>
             Deploy Intelligent<br />
             <span className="relative inline-block bg-gradient-to-r from-primary via-[#7C4DFF] to-indigo-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(91,108,255,0.3)]">
               AI Agents

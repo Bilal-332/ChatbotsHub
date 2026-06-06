@@ -45,6 +45,17 @@ export const authApi = {
     apiClient.post<ApiSuccess<null>>('/auth/reset-password', payload),
 };
 
+// ─── Contact ─────────────────────────────────────────────────────────────────
+export const contactApi = {
+  submit: (payload: {
+    name: string;
+    email: string;
+    message: string;
+    company?: string;
+    website?: string;
+  }) => apiClient.post<ApiSuccess<null>>('/contact', payload),
+};
+
 // ─── Organizations ───────────────────────────────────────────────────────────
 export const organizationApi = {
   get: () => apiClient.get<ApiSuccess<Organization>>('/organizations'),
@@ -58,6 +69,14 @@ export const organizationApi = {
 
   regenerateApiKey: () =>
     apiClient.post<ApiSuccess<{ apiKey: string }>>('/organizations/regenerate-api-key'),
+
+  uploadAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return apiClient.post<ApiSuccess<{ avatarUrl: string }>>('/organizations/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };
 
 // ─── Documents ───────────────────────────────────────────────────────────────

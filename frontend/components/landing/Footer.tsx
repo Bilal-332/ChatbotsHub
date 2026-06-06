@@ -23,10 +23,9 @@ export function Footer() {
           <div>
             <h4 className="text-sm font-semibold text-text-primary mb-6">Product</h4>
             <ul className="flex flex-col gap-4 text-sm text-text-secondary">
-              <li><Link href="#" className="hover:text-primary transition-colors">Features</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Integrations</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Pricing</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Changelog</Link></li>
+              <li><a href="#features" className="hover:text-primary transition-colors">Features</a></li>
+              <li><a href="#pricing" className="hover:text-primary transition-colors">Pricing</a></li>
+              <li><a href="#contact" className="hover:text-primary transition-colors">Contact</a></li>
             </ul>
           </div>
 
@@ -46,7 +45,7 @@ export function Footer() {
               <li><Link href="#" className="hover:text-primary transition-colors">About</Link></li>
               <li><Link href="#" className="hover:text-primary transition-colors">Careers</Link></li>
               <li><Link href="#" className="hover:text-primary transition-colors">Legal</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Contact</Link></li>
+              <li><a href="#contact" className="hover:text-primary transition-colors">Contact</a></li>
             </ul>
           </div>
         </div>
