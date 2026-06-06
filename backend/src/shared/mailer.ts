@@ -71,7 +71,7 @@ export async function sendContactFormEmail(payload: ContactFormPayload): Promise
   const result = await resend.emails.send({
     from,
     to,
-    replyTo: payload.email,
+    reply_to: payload.email,
     subject: `[ChatbotsHub Contact] Message from ${payload.name}`,
     text: `Name: ${payload.name}\nEmail: ${payload.email}${companyLine}\n\nMessage:\n${payload.message}`,
     html: `
