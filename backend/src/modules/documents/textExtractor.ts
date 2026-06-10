@@ -1,5 +1,9 @@
 import fs from 'fs';
+import fsp from 'fs/promises';
 import path from 'path';
+import crypto from 'crypto';
+import { createWriteStream } from 'fs';
+import axios from 'axios';
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
 import { AppError } from '@shared/errors';
@@ -9,13 +13,12 @@ import { logger } from '@shared/logger';
 import Tesseract from 'tesseract.js';
 // @ts-ignore
 import * as pdf2img from 'pdf-img-convert';
+import { pipeline } from 'stream/promises';
+import { config } from '@shared/config';
 
 const MIN_TEXT_LENGTH = 50;
 
-export async function extractText(
-  filePath: string,
-  sourceType: DocumentSourceType,
-): Promise<string> {
+async function extractTextFromFile(filePath: string, sourceType: DocumentSourceType): Promise<string> {
   const buffer = fs.readFileSync(filePath);
   let rawText = '';
 
@@ -77,6 +80,42 @@ export async function extractText(
   }
 
   return cleaned;
+}
+
+async function downloadFileToTemp(fileUrl: string, sourceType: DocumentSourceType): Promise<string> {
+  const response = await axios.get(fileUrl, {
+    responseType: 'stream',
+    timeout: 60_000,
+    validateStatus: (status) => status >= 200 && status < 300,
+  });
+
+  const extension = path.extname(new URL(fileUrl).pathname).toLowerCase() || `.${sourceType}`;
+  const tempFilePath = path.join(
+    config.upload.tempDir,
+    `cloudinary-${Date.now()}-${crypto.randomUUID()}${extension}`,
+  );
+
+  await fsp.mkdir(config.upload.tempDir, { recursive: true });
+  await pipeline(response.data, createWriteStream(tempFilePath));
+
+  return tempFilePath;
+}
+
+export async function extractTextFromUrl(
+  fileUrl: string,
+  sourceType: DocumentSourceType,
+): Promise<string> {
+  if (!fileUrl.trim()) {
+    throw new AppError('fileUrl is required', 400, 'MISSING_FILE_URL');
+  }
+
+  const tempFilePath = await downloadFileToTemp(fileUrl, sourceType);
+
+  try {
+    return await extractTextFromFile(tempFilePath, sourceType);
+  } finally {
+    await fsp.unlink(tempFilePath).catch(() => undefined);
+  }
 }
 
 export function detectSourceType(filename: string): DocumentSourceType {

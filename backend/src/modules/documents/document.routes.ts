@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { documentController } from './document.controller';
-import { documentUpload } from './multerConfig';
 import { authenticate, requireRole } from '@core/middleware/authMiddleware';
 import { checkDocumentLimit } from '@core/middleware/planLimitMiddleware';
 import { param } from 'express-validator';
@@ -27,7 +26,6 @@ router.post(
   '/',
   requireRole('admin'),
   checkDocumentLimit,
-  documentUpload.single('file'),
   documentController.upload.bind(documentController),
 );
 

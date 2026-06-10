@@ -86,10 +86,8 @@ export const documentApi = {
 
   get: (id: string) => apiClient.get<ApiSuccess<Document>>(`/documents/${id}`),
 
-  upload: (formData: FormData) =>
-    apiClient.post<ApiSuccess<Document>>('/documents', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+  upload: (payload: { fileUrl: string; originalName: string }) =>
+    apiClient.post<ApiSuccess<Document>>('/documents', payload),
 
   delete: (id: string) => apiClient.delete<ApiSuccess<null>>(`/documents/${id}`),
 

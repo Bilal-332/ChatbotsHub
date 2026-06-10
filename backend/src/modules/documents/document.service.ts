@@ -1,6 +1,5 @@
-import fs from 'fs';
 import { Document as DocumentModel, IDocument } from './document.model';
-import { extractText, detectSourceType } from './textExtractor';
+import { extractTextFromUrl, detectSourceType } from './textExtractor';
 import { chunkTextWithMetadata } from '@core/ai/textChunker';
 import { generateEmbeddingsBatch } from '@core/ai/embeddingService';
 import { upsertVectors, deleteDocumentVectors } from '@core/vector/qdrantClient';
@@ -12,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 export class DocumentService {
   async uploadAndProcess(
     organizationId: string,
-    filePath: string,
+    fileUrl: string,
     originalName: string,
   ): Promise<IDocument> {
     const sourceType = detectSourceType(originalName);
@@ -21,12 +20,13 @@ export class DocumentService {
     const doc = await DocumentModel.create({
       organizationId,
       title: originalName,
+      fileUrl,
       sourceType,
       status: 'processing',
     });
 
     // Process asynchronously to return fast to the user
-    this.processDocumentAsync(doc._id.toString(), organizationId, filePath, sourceType, doc.title).catch(
+    this.processDocumentAsync(doc._id.toString(), organizationId, fileUrl, sourceType, doc.title).catch(
       (error: unknown) => {
         logger.error(`Document processing failed for ${doc._id.toString()}:`, error);
       },
@@ -38,13 +38,13 @@ export class DocumentService {
   private async processDocumentAsync(
     documentId: string,
     organizationId: string,
-    filePath: string,
+    fileUrl: string,
     sourceType: IDocument['sourceType'],
     documentTitle: string,
   ): Promise<void> {
     try {
       // 1. Extract text
-      const text = await extractText(filePath, sourceType);
+      const text = await extractTextFromUrl(fileUrl, sourceType);
 
       // 2. Chunk text
       const chunks = chunkTextWithMetadata(text, {
@@ -91,11 +91,6 @@ export class DocumentService {
         processingError: message.slice(0, 500),
       });
       logger.error(`Document ${documentId} processing failed:`, error);
-    } finally {
-      // Always clean up the temp file
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
     }
   }
 

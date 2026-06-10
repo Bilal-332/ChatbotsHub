@@ -3,19 +3,32 @@ import { documentService } from './document.service';
 import { sendSuccess, sendCreated } from '@shared/apiResponse';
 import { AppError } from '@shared/errors';
 import type { AuthenticatedRequest } from '@shared/types';
+import { isCloudinaryUrl } from '@core/cloudinary.config';
 
 export class DocumentController {
   async upload(req: Request, res: Response): Promise<void> {
     const { organizationId } = (req as AuthenticatedRequest).user;
+    const { fileUrl, originalName } = req.body as {
+      fileUrl?: unknown;
+      originalName?: unknown;
+    };
 
-    if (!req.file) {
-      throw new AppError('No file uploaded', 400, 'NO_FILE');
+    if (typeof fileUrl !== 'string' || !fileUrl.trim()) {
+      throw new AppError('fileUrl is required', 400, 'MISSING_FILE_URL');
+    }
+
+    if (typeof originalName !== 'string' || !originalName.trim()) {
+      throw new AppError('originalName is required', 400, 'MISSING_ORIGINAL_NAME');
+    }
+
+    if (!isCloudinaryUrl(fileUrl)) {
+      throw new AppError('Invalid Cloudinary fileUrl', 400, 'INVALID_FILE_URL');
     }
 
     const doc = await documentService.uploadAndProcess(
       organizationId,
-      req.file.path,
-      req.file.originalname,
+      fileUrl.trim(),
+      originalName.trim(),
     );
 
     sendCreated(res, doc, 'Document uploaded and processing started');

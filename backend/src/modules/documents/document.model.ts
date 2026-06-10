@@ -5,6 +5,7 @@ export interface IDocument extends MongooseDocument {
   _id: Types.ObjectId;
   organizationId: Types.ObjectId;
   title: string;
+  fileUrl: string;
   sourceType: DocumentSourceType;
   status: DocumentStatus;
   chunkCount: number;
@@ -26,6 +27,12 @@ const documentSchema = new Schema<IDocument>(
       required: true,
       trim: true,
       maxlength: 200,
+    },
+    fileUrl: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 2048,
     },
     sourceType: {
       type: String,

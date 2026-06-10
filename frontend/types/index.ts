@@ -100,6 +100,7 @@ export interface Document {
   _id: string;
   organizationId: string;
   title: string;
+  fileUrl: string;
   sourceType: DocumentSourceType;
   status: DocumentStatus;
   chunkCount: number;

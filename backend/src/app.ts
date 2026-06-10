@@ -7,6 +7,7 @@ import compression from 'compression';
 import morgan from 'morgan';
 
 import { config } from '@shared/config';
+import '@core/cloudinary.config';
 import { logger } from '@shared/logger';
 import { globalRateLimiter } from '@core/middleware/rateLimiter';
 import { errorHandler, notFoundHandler } from '@core/middleware/errorHandler';

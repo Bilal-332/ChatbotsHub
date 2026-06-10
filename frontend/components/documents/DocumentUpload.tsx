@@ -4,8 +4,9 @@ import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { AxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import { documentApi } from '@lib/api';
+import { uploadToCloudinary } from '@lib/uploadToCloudinary';
 import { Upload, FileText, X, Loader2 } from 'lucide-react';
 
 const ACCEPTED_TYPES = {
@@ -21,18 +22,26 @@ export function DocumentUpload({ onClose }: { onClose: () => void }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const { mutate: upload, isPending } = useMutation({
-    mutationFn: (file: File) => {
-      const formData = new FormData();
-      formData.append('file', file);
-      return documentApi.upload(formData);
+    mutationFn: async (file: File) => {
+      const fileUrl = await uploadToCloudinary(file);
+      return documentApi.upload({
+        fileUrl,
+        originalName: file.name,
+      });
     },
     onSuccess: () => {
       toast.success('Document uploaded! Processing in background...');
       queryClient.invalidateQueries({ queryKey: ['documents'] });
       onClose();
     },
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast.error(error.response?.data?.message ?? 'Upload failed. Please try again.');
+    onError: (error: unknown) => {
+      const message = isAxiosError<{ message: string }>(error)
+        ? error.response?.data?.message
+        : error instanceof Error
+          ? error.message
+          : undefined;
+
+      toast.error(message ?? 'Upload failed. Please try again.');
     },
   });
 

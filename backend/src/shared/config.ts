@@ -24,6 +24,9 @@ const envSchema = z.object({
   HUGGINGFACE_EMBEDDING_MODEL: z
     .string()
     .default('BAAI/bge-small-en-v1.5'),
+  CLOUDINARY_CLOUD_NAME: z.string().min(1),
+  CLOUDINARY_API_KEY: z.string().min(1),
+  CLOUDINARY_API_SECRET: z.string().min(1),
   MAX_FILE_SIZE_MB: z.string().default('10'),
   UPLOAD_TEMP_DIR: z.string().default('./tmp/uploads'),
   RATE_LIMIT_WINDOW_MS: z.string().default('900000'),
@@ -86,6 +89,11 @@ export const config = {
   huggingface: {
     apiKey: parsed.data.HUGGINGFACE_API_KEY,
     embeddingModel: parsed.data.HUGGINGFACE_EMBEDDING_MODEL,
+  },
+  cloudinary: {
+    cloudName: parsed.data.CLOUDINARY_CLOUD_NAME,
+    apiKey: parsed.data.CLOUDINARY_API_KEY,
+    apiSecret: parsed.data.CLOUDINARY_API_SECRET,
   },
   upload: {
     maxFileSizeMb: parseInt(parsed.data.MAX_FILE_SIZE_MB, 10),
