@@ -2,9 +2,8 @@ import { Organization, IOrganization } from './organization.model';
 import { ConflictError, NotFoundError, ForbiddenError } from '@shared/errors';
 import { deleteOrganizationVectors } from '@core/vector/qdrantClient';
 import { v4 as uuidv4 } from 'uuid';
-import path from 'path';
-import fs from 'fs';
-import { config } from '@shared/config';
+import fs from 'fs/promises';
+import { deleteCloudinaryImage, uploadImageToCloudinary } from '@core/cloudinary.config';
 
 export interface CreateOrganizationDto {
   name: string;
@@ -112,25 +111,33 @@ export class OrganizationService {
   ): Promise<string> {
     if (id !== requestingOrgId) throw new ForbiddenError();
 
-    const filename = path.basename(filePath);
-    const avatarUrl = `/uploads/avatars/${filename}`;
+    let uploadedAvatarUrl: string | null = null;
 
-    // Remove previous avatar file if stored locally
-    if (previousAvatarUrl?.startsWith('/uploads/avatars/')) {
-      const oldPath = path.join(config.upload.tempDir, previousAvatarUrl.replace('/uploads/', ''));
-      if (fs.existsSync(oldPath)) {
-        fs.unlinkSync(oldPath);
+    try {
+      const uploaded = await uploadImageToCloudinary(filePath, 'chatbotshub/avatars');
+      uploadedAvatarUrl = uploaded.secureUrl;
+
+      const org = await Organization.findByIdAndUpdate(
+        id,
+        { $set: { 'settings.avatarUrl': uploaded.secureUrl } },
+        { new: true, runValidators: true },
+      );
+
+      if (!org) throw new NotFoundError('Organization');
+
+      if (previousAvatarUrl) {
+        await deleteCloudinaryImage(previousAvatarUrl).catch(() => undefined);
       }
+
+      return uploaded.secureUrl;
+    } catch (error) {
+      if (uploadedAvatarUrl) {
+        await deleteCloudinaryImage(uploadedAvatarUrl).catch(() => undefined);
+      }
+      throw error;
+    } finally {
+      await fs.unlink(filePath).catch(() => undefined);
     }
-
-    const org = await Organization.findByIdAndUpdate(
-      id,
-      { $set: { 'settings.avatarUrl': avatarUrl } },
-      { new: true, runValidators: true },
-    );
-
-    if (!org) throw new NotFoundError('Organization');
-    return avatarUrl;
   }
 }
 
