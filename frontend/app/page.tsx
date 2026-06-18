@@ -36,6 +36,10 @@ const ContactSection = dynamic(
   () => import('@components/landing/ContactSection').then((m) => m.ContactSection),
 );
 
+const FaqSection = dynamic(
+  () => import('@components/landing/FaqSection').then((m) => m.FaqSection),
+);
+
 const CTASection = dynamic(
   () => import('@components/landing/CTASection').then((m) => m.CTASection),
 );
@@ -56,6 +60,7 @@ export default function LandingPage() {
         <FeaturesSection />
         <PricingSection />
         <DashboardPreviewSection />
+        <FaqSection />
         <ContactSection />
         <CTASection />
       </main>

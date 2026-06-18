@@ -15,8 +15,23 @@ async function sleep(ms: number): Promise<void> {
 }
 
 /**
- * Generate a single embedding vector for a text using HuggingFace Inference API.
- * Model: sentence-transformers/all-MiniLM-L6-v2 → 384-dimensional vectors
+ * BGE retrieval models (e.g. BAAI/bge-small-en-v1.5) are trained to prepend a
+ * short instruction to the QUERY side only (passages stay unprefixed). Applying
+ * it improves retrieval recall. It is a no-op for non-BGE models.
+ */
+const BGE_QUERY_INSTRUCTION = 'Represent this sentence for searching relevant passages: ';
+
+function buildQueryInput(text: string): string {
+  return /bge/i.test(config.huggingface.embeddingModel)
+    ? `${BGE_QUERY_INSTRUCTION}${text}`
+    : text;
+}
+
+/**
+ * Generate a single embedding vector for a text (passage/document side) using
+ * the HuggingFace Inference API. The configured model is expected to produce
+ * 384-dimensional vectors (e.g. BAAI/bge-small-en-v1.5) to match the Qdrant
+ * collection dimension.
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   const url = `${HF_ROUTER_BASE}/${config.huggingface.embeddingModel}/pipeline/feature-extraction`;
@@ -62,6 +77,15 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   }
 
   throw new AppError('Embedding generation failed after retries', 503, 'EMBEDDING_FAILED');
+}
+
+/**
+ * Generate an embedding for a search QUERY. Adds the BGE query instruction
+ * (when applicable) so queries and passages are encoded asymmetrically.
+ * Use this for retrieval; use generateEmbedding for indexing passages.
+ */
+export async function generateQueryEmbedding(text: string): Promise<number[]> {
+  return generateEmbedding(buildQueryInput(text));
 }
 
 /**

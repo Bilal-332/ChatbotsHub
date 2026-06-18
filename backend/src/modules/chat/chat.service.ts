@@ -1,4 +1,4 @@
-import { generateEmbedding } from '@core/ai/embeddingService';
+import { generateQueryEmbedding } from '@core/ai/embeddingService';
 import { searchSimilarChunks } from '@core/vector/qdrantClient';
 import { generateChatCompletion, ChatHistoryMessage } from '@core/ai/chatService';
 import { classifyQuery } from '@core/ai/queryClassifier';
@@ -14,13 +14,14 @@ import { AppError } from '@shared/errors';
 import { Document as DocumentModel } from '@modules/documents/document.model';
 import { Organization } from '@modules/organizations/organization.model';
 
-const MIN_RELEVANCE_SCORE = 0.28;
+const MIN_RELEVANCE_SCORE = 0.2;
+const MIN_RERANK_SCORE = 0.35;
 const RETRIEVAL_TOP_K = 8;
 const RERANK_TOP_N = 5;
-const MIN_CONFIDENCE_FOR_RAG = 0.34;
+const MIN_CONFIDENCE_FOR_RAG = 0.28;
 
 const NO_KNOWLEDGE_MESSAGE =
-  'I could not find enough relevant information in your uploaded documents to answer that.';
+  'That\'s a great question. I don\'t know the answer yet, but if you tell me more, I\'ll do my best to help.';
 
 function resolveNoKnowledgeMessage(customMessage?: string): string {
   const trimmed = customMessage?.trim();
@@ -335,6 +336,37 @@ export class ChatService {
       };
     }
 
+    // Clearly conversational / small-talk prompts are answered directly by the
+    // LLM (general mode) instead of being forced through document retrieval,
+    // which would otherwise return the "no relevant information" fallback.
+    if (queryType === 'general') {
+      const { answer: generalAnswer, tokensUsed } = await generateChatCompletion(
+        questionContext.resolvedQuestion,
+        {
+          mode: 'general',
+          history: currentHistory,
+          responseLanguage: languageContext.responseLanguage,
+        },
+      );
+
+      const finalAnswer = sanitizeAnswer(generalAnswer);
+
+      await memoryService.saveTurn(
+        organizationId,
+        conversationId,
+        question,
+        finalAnswer,
+        { preferredLanguage: languageContext.responseLanguage },
+      );
+
+      return {
+        answer: finalAnswer,
+        tokensUsed,
+        sourceChunks: 0,
+        hasContext: false,
+      };
+    }
+
     const readyDocumentCount = await DocumentModel.countDocuments({
       organizationId,
       status: 'ready',
@@ -363,9 +395,18 @@ export class ChatService {
       );
     }
 
-    const questionVector = await generateEmbedding(resolvedQuestion);
-    const chunks = await searchSimilarChunks(questionVector, organizationId, RETRIEVAL_TOP_K);
-    const relevantChunks = chunks.filter((c) => c.score >= MIN_RELEVANCE_SCORE);
+    const questionVector = await generateQueryEmbedding(resolvedQuestion);
+    const candidates = await searchSimilarChunks(questionVector, organizationId, RETRIEVAL_TOP_K);
+
+    // Re-rank the full candidate set BEFORE filtering, so an exact keyword/name
+    // match (strong lexical overlap) can rescue a chunk whose dense-only score
+    // is modest. Filtering on raw semantic score first would discard it.
+    const rankedChunks = rerankChunks(resolvedQuestion, candidates, RERANK_TOP_N);
+
+    // Keep a chunk if it clears a low semantic bar OR has strong blended overlap.
+    const relevantChunks = rankedChunks.filter(
+      (c) => c.score >= MIN_RELEVANCE_SCORE || (c.rerankScore ?? 0) >= MIN_RERANK_SCORE,
+    );
 
     if (relevantChunks.length === 0) {
       let fallbackMessage = resolveNoKnowledgeMessage(orgSettings.noAnswerMessage);
@@ -385,8 +426,7 @@ export class ChatService {
       };
     }
 
-    const rankedChunks = rerankChunks(resolvedQuestion, relevantChunks, RERANK_TOP_N);
-    const confidence = calculateRetrievalConfidence(rankedChunks);
+    const confidence = calculateRetrievalConfidence(relevantChunks);
 
     if (confidence < MIN_CONFIDENCE_FOR_RAG) {
       let fallbackMessage = resolveNoKnowledgeMessage(orgSettings.noAnswerMessage);
@@ -406,11 +446,12 @@ export class ChatService {
       };
     }
 
-    const history = [...currentHistory, { role: 'user', content: question } as ChatHistoryMessage];
+    // Pass only prior turns as history; generateChatCompletion appends the
+    // current question itself, so including it here would duplicate the turn.
     const { answer, tokensUsed } = await generateChatCompletion(resolvedQuestion, {
       mode: 'knowledge',
-      history,
-      contextChunks: rankedChunks.map((chunk) => ({
+      history: currentHistory,
+      contextChunks: relevantChunks.map((chunk) => ({
         text: chunk.text,
         documentTitle: chunk.documentTitle,
         section: chunk.section,
@@ -419,16 +460,10 @@ export class ChatService {
       responseLanguage: languageContext.responseLanguage,
     });
 
-    let finalAnswer = sanitizeAnswer(answer);
-
-    // Ensure answer is in the user's language when auto-detect is non-English
-    if (languageContext.responseLanguage !== 'en') {
-      finalAnswer = await translateText(
-        finalAnswer,
-        languageContext.responseLanguage,
-        'en',
-      );
-    }
+    // The model is already instructed to answer in responseLanguage via the
+    // system prompt, so no post-hoc translation is needed (doing so would
+    // re-translate an already-localized answer and waste a Groq round-trip).
+    const finalAnswer = sanitizeAnswer(answer);
 
     await memoryService.saveTurn(
       organizationId,
@@ -444,7 +479,7 @@ export class ChatService {
     return {
       answer: finalAnswer,
       tokensUsed,
-      sourceChunks: rankedChunks.length,
+      sourceChunks: relevantChunks.length,
       hasContext: true,
     };
   }

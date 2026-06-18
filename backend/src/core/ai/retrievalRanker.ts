@@ -75,7 +75,16 @@ export function rerankChunks(question: string, chunks: ScoredChunk[], topN = 5):
 export function calculateRetrievalConfidence(chunks: ScoredChunk[]): number {
   if (chunks.length === 0) return 0;
 
+  // Per chunk, take the BEST of its semantic score and its blended rerank score:
+  // - a paraphrased match scores high on semantics (no lexical overlap), and
+  // - an exact keyword/name match scores high on the blended score.
+  // Taking the max avoids penalizing either case, which the plain blended score
+  // (semantic*0.65 + lexical*0.35) would otherwise do.
   const topChunks = chunks.slice(0, 3);
-  const total = topChunks.reduce((sum, chunk) => sum + (chunk.rerankScore ?? 0), 0);
+  const total = topChunks.reduce((sum, chunk) => {
+    const semantic = Math.max(0, Math.min(1, chunk.score));
+    const blended = Math.max(0, Math.min(1, chunk.rerankScore ?? semantic));
+    return sum + Math.max(semantic, blended);
+  }, 0);
   return total / topChunks.length;
 }

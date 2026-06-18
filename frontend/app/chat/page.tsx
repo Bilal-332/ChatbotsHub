@@ -166,6 +166,15 @@ export default function ChatWidgetPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Re-focus the input once the answer arrives and the field is enabled again.
+  // Doing this here (rather than right after setIsLoading) guarantees the input
+  // has re-rendered as enabled before we focus it.
+  useEffect(() => {
+    if (!isLoading && apiKey) {
+      inputRef.current?.focus();
+    }
+  }, [isLoading, apiKey]);
+
   const sendMessage = async (e: FormEvent) => {
     e.preventDefault();
     const question = input.trim();
@@ -200,7 +209,6 @@ export default function ChatWidgetPage() {
       ]);
     } finally {
       setIsLoading(false);
-      inputRef.current?.focus();
     }
   };
 
@@ -324,7 +332,7 @@ export default function ChatWidgetPage() {
         <p className="mt-1.5 text-center text-[10px] text-gray-400">
           Powered by{' '}
           <a
-            href="https://chatbotshub.io"
+            href="https://chatbotshub.me"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:underline"

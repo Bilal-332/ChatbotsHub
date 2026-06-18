@@ -62,6 +62,14 @@ export function Navbar() {
             Contact
           </a>
           <a
+            href="/blog"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+          >
+            Blog
+          </a>
+          <a
             href="#dashboard-preview"
             className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
           >
@@ -107,6 +115,15 @@ export function Navbar() {
               </a>
               <a href="#contact" className="text-sm font-medium text-text-primary" onClick={() => setMenuOpen(false)}>
                 Contact
+              </a>
+              <a
+                href="/blog"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-text-primary"
+                onClick={() => setMenuOpen(false)}
+              >
+                Blog
               </a>
               <a href="#dashboard-preview" className="text-sm font-medium text-text-primary" onClick={() => setMenuOpen(false)}>
                 Enterprise

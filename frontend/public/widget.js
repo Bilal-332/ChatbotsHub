@@ -35,10 +35,13 @@
     '#chk-toggle{position:fixed;' + positionStyle + 'z-index:9999;width:56px;height:56px;border-radius:50%;background:' + primaryColor + ';border:none;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;transition:transform .2s;}',
     '#chk-toggle:hover{transform:scale(1.08);}',
     '#chk-toggle svg{width:26px;height:26px;fill:white;}',
-    '#chk-iframe-container{position:fixed;' + positionStyle.replace('bottom:24px', 'bottom:92px') + 'z-index:9998;width:380px;height:560px;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.18);overflow:hidden;display:none;transition:opacity .2s;}',
+    // Width/height cap to the viewport so the popup (incl. its header) always
+    // fits regardless of browser zoom. dvh handles mobile UI chrome; vh is the
+    // fallback for older engines. 116px = bottom offset (92) + top breathing room.
+    '#chk-iframe-container{position:fixed;' + positionStyle.replace('bottom:24px', 'bottom:92px') + 'z-index:9998;width:380px;max-width:calc(100vw - 48px);height:560px;max-height:calc(100vh - 116px);max-height:calc(100dvh - 116px);border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.18);overflow:hidden;display:none;transition:opacity .2s;}',
     '#chk-iframe-container.open{display:block;}',
-    '#chk-iframe-container iframe{width:100%;height:100%;border:none;}',
-    '@media(max-width:480px){#chk-iframe-container{width:calc(100vw - 32px);height:70vh;bottom:82px;left:16px;right:16px;}}',
+    '#chk-iframe-container iframe{width:100%;height:100%;border:none;display:block;}',
+    '@media(max-width:480px){#chk-iframe-container{width:calc(100vw - 32px);max-width:none;height:70vh;max-height:calc(100dvh - 96px);bottom:82px;left:16px;right:16px;}}',
   ].join('');
   document.head.appendChild(style);
 

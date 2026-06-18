@@ -5,28 +5,23 @@ const GREETING_PATTERNS: RegExp[] = [
   /^(how are you|what's up|sup)\b[!.?\s]*$/i,
 ];
 
-const KNOWLEDGE_HINTS = [
-  'according to',
-  'from the document',
-  'in the document',
-  'knowledge base',
-  'uploaded file',
-  'our policy',
-  'company policy',
-  'handbook',
-  'contract',
-  'invoice',
-  'organization',
-  'internal',
-  'what does',
-  'where does it say',
-  'section',
-  'page',
+/**
+ * High-precision conversational / small-talk prompts that are clearly NOT
+ * about the organization's documents. These are anchored to the whole message
+ * (`$`) so partial matches like "what can you do about my refund?" still fall
+ * through to knowledge (RAG) retrieval.
+ */
+const GENERAL_PATTERNS: RegExp[] = [
+  /^(who|what)\s+are\s+you\b[?!.\s]*$/i,
+  /^what'?s\s+your\s+name\b[?!.\s]*$/i,
+  /^what\s+can\s+you\s+do\b[?!.\s]*$/i,
+  /^how\s+do\s+you\s+work\b[?!.\s]*$/i,
+  /^are\s+you\s+(a\s+)?(bot|robot|human|ai|real)\b[?!.\s]*$/i,
+  /\b(tell|say|share)\s+(me\s+)?(a\s+)?(joke|fun\s*fact)\b/i,
 ];
 
 export function classifyQuery(rawQuestion: string): QueryType {
   const question = rawQuestion.trim();
-  const lower = question.toLowerCase();
 
   if (!question) {
     return 'general';
@@ -36,13 +31,13 @@ export function classifyQuery(rawQuestion: string): QueryType {
     return 'greeting';
   }
 
-  const hintMatches = KNOWLEDGE_HINTS.filter((hint) => lower.includes(hint)).length;
-
-  // Questions that explicitly reference private/business docs should use RAG.
-  if (hintMatches >= 1) {
-    return 'knowledge';
+  // Clearly conversational / small-talk prompts go to the direct LLM route.
+  if (GENERAL_PATTERNS.some((pattern) => pattern.test(question))) {
+    return 'general';
   }
 
-  // Generic social / utility prompts should stay on direct LLM route.
-  return 'general';
+  // Everything else defaults to knowledge (RAG). Document QA is the primary
+  // purpose, so ambiguous questions should consult the uploaded documents
+  // rather than being answered from the model's general knowledge.
+  return 'knowledge';
 }

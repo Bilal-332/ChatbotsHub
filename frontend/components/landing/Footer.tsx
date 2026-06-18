@@ -23,29 +23,29 @@ export function Footer() {
           <div>
             <h4 className="text-sm font-semibold text-text-primary mb-6">Product</h4>
             <ul className="flex flex-col gap-4 text-sm text-text-secondary">
-              <li><a href="#features" className="hover:text-primary transition-colors">Features</a></li>
-              <li><a href="#pricing" className="hover:text-primary transition-colors">Pricing</a></li>
-              <li><a href="#contact" className="hover:text-primary transition-colors">Contact</a></li>
+              <li><a href="/#features" className="hover:text-primary transition-colors">Features</a></li>
+              <li><a href="/#pricing" className="hover:text-primary transition-colors">Pricing</a></li>
+              <li><a href="/#contact" className="hover:text-primary transition-colors">Contact</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-sm font-semibold text-text-primary mb-6">Resources</h4>
             <ul className="flex flex-col gap-4 text-sm text-text-secondary">
-              <li><Link href="#" className="hover:text-primary transition-colors">Documentation</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">API Reference</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Blog</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Community</Link></li>
+              <li><Link href="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
+              <li><a href="/#how-it-works" className="hover:text-primary transition-colors">How it works</a></li>
+              <li><a href="/#faq" className="hover:text-primary transition-colors">FAQ</a></li>
+              <li><a href="/#pricing" className="hover:text-primary transition-colors">Pricing</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-sm font-semibold text-text-primary mb-6">Company</h4>
             <ul className="flex flex-col gap-4 text-sm text-text-secondary">
-              <li><Link href="#" className="hover:text-primary transition-colors">About</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Careers</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Legal</Link></li>
-              <li><a href="#contact" className="hover:text-primary transition-colors">Contact</a></li>
+              <li><a href="/#how-it-works" className="hover:text-primary transition-colors">About</a></li>
+              <li><Link href="/blog" className="hover:text-primary transition-colors">Resources</Link></li>
+              <li><a href="/#pricing" className="hover:text-primary transition-colors">Plans</a></li>
+              <li><a href="/#contact" className="hover:text-primary transition-colors">Contact</a></li>
             </ul>
           </div>
         </div>

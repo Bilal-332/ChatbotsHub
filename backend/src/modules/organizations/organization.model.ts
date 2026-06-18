@@ -92,7 +92,7 @@ const organizationSchema = new Schema<IOrganization>(
       noAnswerMessage: {
         type: String,
         default:
-          'I could not find enough relevant information in your uploaded documents to answer that.',
+          'That\'s a great question. I don\'t know the answer yet, but if you tell me more, I\'ll do my best to help.',
         maxlength: 300,
       },
       primaryColor: { type: String, default: '#6366f1', match: /^#[0-9A-Fa-f]{6}$/ },

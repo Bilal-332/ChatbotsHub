@@ -8,6 +8,34 @@ import { logger } from '@shared/logger';
 import { paginate, PaginatedData } from '@shared/apiResponse';
 import { v4 as uuidv4 } from 'uuid';
 
+/**
+ * Turn a filename/title into clean searchable words (drop extension, turn
+ * separators into spaces). e.g. "Muhammad_Bilal_Resume.pdf" -> "Muhammad Bilal Resume".
+ */
+function cleanTitleForEmbedding(title: string): string {
+  return title
+    .replace(/\.[^.]+$/, '')
+    .replace(/[_\-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Build the text that is actually embedded for a chunk. We prepend the document
+ * title and the chunk's section heading so that anchors like the person's name
+ * (often the top-of-document heading) and section titles ("Projects",
+ * "Experience", "Address") are present in the vector. Headings are otherwise
+ * stripped from chunk bodies by the chunker, which makes those queries
+ * un-retrievable. The stored payload still keeps the raw chunk text.
+ */
+function buildEmbeddingInput(title: string, section: string | undefined, text: string): string {
+  const cleanTitle = cleanTitleForEmbedding(title);
+  const parts = [cleanTitle, section?.trim(), text].filter(
+    (part): part is string => Boolean(part && part.length > 0),
+  );
+  return parts.join('\n');
+}
+
 export class DocumentService {
   async uploadAndProcess(
     organizationId: string,
@@ -57,8 +85,12 @@ export class DocumentService {
         throw new Error('No valid chunks were produced from extracted text');
       }
 
-      // 3. Generate embeddings in batches
-      const embeddings = await generateEmbeddingsBatch(chunks.map((chunk) => chunk.text));
+      // 3. Generate embeddings in batches.
+      // Embed an enriched string (title + section + body) so headings/name are
+      // searchable, but keep the raw chunk text for storage and LLM context.
+      const embeddings = await generateEmbeddingsBatch(
+        chunks.map((chunk) => buildEmbeddingInput(documentTitle, chunk.section, chunk.text)),
+      );
 
       // 4. Upsert into Qdrant
       const points = chunks.map((chunk, i) => ({
@@ -142,14 +174,29 @@ export class DocumentService {
     // Clear old vectors before reprocessing
     await deleteDocumentVectors(organizationId, documentId);
 
-    await DocumentModel.findByIdAndUpdate(documentId, {
-      status: 'processing',
-      processingError: undefined,
-      chunkCount: 0,
+    const updated = await DocumentModel.findByIdAndUpdate(
+      documentId,
+      {
+        $set: { status: 'processing', chunkCount: 0 },
+        $unset: { processingError: 1 },
+      },
+      { new: true },
+    );
+
+    // Actually re-run extraction → chunking → embedding → indexing.
+    // Without this the document would stay stuck in "processing" forever.
+    this.processDocumentAsync(
+      documentId,
+      organizationId,
+      doc.fileUrl,
+      doc.sourceType,
+      doc.title,
+    ).catch((error: unknown) => {
+      logger.error(`Document reprocessing failed for ${documentId}:`, error);
     });
 
-    logger.info(`Reprocessing queued for document ${documentId}`);
-    return doc;
+    logger.info(`Reprocessing started for document ${documentId}`);
+    return updated ?? doc;
   }
 }
 
