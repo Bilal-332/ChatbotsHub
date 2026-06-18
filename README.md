@@ -80,10 +80,10 @@ Qdrant dashboard: http://localhost:6334/dashboard
 ```bash
 cd backend
 npm run build
-npm start
+npm start 
 ```
 
-Set all environment variables from `backend/.env.example` in your host dashboard.
+Set all environment variables from `backend/.env.example` in your host dashboard properly .
 
 ### Frontend (Vercel)
 
