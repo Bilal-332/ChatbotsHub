@@ -144,6 +144,20 @@ export default function ChatWidgetPage() {
           ...data,
           avatarUrl: data.avatarUrl?.trim() || null,
         }));
+
+        // Notify the embedding widget so the floating toggle button can adopt
+        // the branding color configured in dashboard settings.
+        if (
+          data.primaryColor &&
+          typeof window !== 'undefined' &&
+          window.parent &&
+          window.parent !== window
+        ) {
+          window.parent.postMessage(
+            { type: 'chatbotshub:settings', primaryColor: data.primaryColor },
+            '*',
+          );
+        }
       })
       .catch(() => {});
   }, [apiKey, API_BASE]);

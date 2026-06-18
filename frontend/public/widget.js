@@ -78,6 +78,28 @@
     }
   });
 
+  // ─── Sync branding color from dashboard settings ─────────────────────────────
+  // The chat page (inside the iframe) fetches the live organization settings and
+  // posts the resolved primaryColor back to this parent script, so the floating
+  // toggle button matches the branding color chosen in settings — even when the
+  // host page did not pass a data-color attribute.
+  var chatOrigin;
+  try {
+    chatOrigin = new URL(WIDGET_BASE_URL).origin;
+  } catch (e) {
+    chatOrigin = null;
+  }
+
+  window.addEventListener('message', function (event) {
+    if (chatOrigin && event.origin !== chatOrigin) return;
+    var data = event.data;
+    if (!data || data.type !== 'chatbotshub:settings') return;
+    if (typeof data.primaryColor === 'string' && /^#[0-9A-Fa-f]{6}$/.test(data.primaryColor)) {
+      primaryColor = data.primaryColor;
+      toggleBtn.style.background = data.primaryColor;
+    }
+  });
+
   document.body.appendChild(container);
   document.body.appendChild(toggleBtn);
 })();
