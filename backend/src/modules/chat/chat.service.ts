@@ -395,7 +395,20 @@ export class ChatService {
       );
     }
 
-    const questionVector = await generateQueryEmbedding(resolvedQuestion);
+    // Include recent conversation history in the retrieval query so follow-ups
+    // with pronouns/vague phrasing ("his projects", "tell me more about him")
+    // embed against the right meaning. Only the embedding query is augmented;
+    // rerank and generation still use the standalone resolvedQuestion.
+    const recentContext = currentHistory
+      .slice(-4)
+      .map((message) => message.content)
+      .join(' ')
+      .slice(0, 600);
+    const retrievalQuery = recentContext
+      ? `${recentContext}\n${resolvedQuestion}`
+      : resolvedQuestion;
+
+    const questionVector = await generateQueryEmbedding(retrievalQuery);
     const candidates = await searchSimilarChunks(questionVector, organizationId, RETRIEVAL_TOP_K);
 
     // Re-rank the full candidate set BEFORE filtering, so an exact keyword/name

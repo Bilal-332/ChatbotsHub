@@ -2,11 +2,13 @@
 
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
-import { documentApi } from '@lib/api';
+import { documentApi, organizationApi } from '@lib/api';
 import { uploadToCloudinary } from '@lib/uploadToCloudinary';
+import { PRICING_PLANS } from '@lib/constants';
+import type { Organization } from '@appTypes/index';
 import { Upload, FileText, X, Loader2 } from 'lucide-react';
 
 const ACCEPTED_TYPES = {
@@ -15,11 +17,21 @@ const ACCEPTED_TYPES = {
   'text/plain': ['.txt'],
 };
 
-const MAX_SIZE_MB = 10;
+const FREE_MAX_SIZE_MB =
+  PRICING_PLANS.find((p) => p.id === 'free')?.features.maxFileSizeMb ?? 5;
 
 export function DocumentUpload({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Plan-based upload limit (Free 5MB, Starter 10MB, Pro 25MB). Reuses the
+  // cached org query; defaults to the restrictive Free limit until loaded.
+  const { data: org } = useQuery<Organization>({
+    queryKey: ['organization'],
+    queryFn: () => organizationApi.get().then((r) => r.data.data),
+  });
+  const MAX_SIZE_MB =
+    PRICING_PLANS.find((p) => p.id === org?.plan)?.features.maxFileSizeMb ?? FREE_MAX_SIZE_MB;
 
   const { mutate: upload, isPending } = useMutation({
     mutationFn: async (file: File) => {
