@@ -1,12 +1,25 @@
 import { Document as DocumentModel, IDocument } from './document.model';
 import { extractTextFromUrl, detectSourceType } from './textExtractor';
+import { crawlWebsite } from './websiteCrawler';
 import { chunkTextWithMetadata } from '@core/ai/textChunker';
 import { generateEmbeddingsBatch } from '@core/ai/embeddingService';
 import { upsertVectors, deleteDocumentVectors } from '@core/vector/qdrantClient';
 import { NotFoundError, ForbiddenError } from '@shared/errors';
 import { logger } from '@shared/logger';
 import { paginate, PaginatedData } from '@shared/apiResponse';
+import { Organization } from '@modules/organizations/organization.model';
+import { PLAN_LIMITS } from '@modules/plans/plan.constants';
 import { v4 as uuidv4 } from 'uuid';
+
+/**
+ * Resolve the per-plan website crawl page limit for an organization, falling
+ * back to the free-tier limit when the org/plan cannot be determined.
+ */
+export async function resolveCrawlPageLimit(organizationId: string): Promise<number> {
+  const org = await Organization.findById(organizationId).select('plan').lean();
+  const plan = org?.plan ?? 'free';
+  return PLAN_LIMITS[plan].maxCrawlPages;
+}
 
 /**
  * Turn a filename/title into clean searchable words (drop extension, turn
@@ -71,58 +84,134 @@ export class DocumentService {
     documentTitle: string,
   ): Promise<void> {
     try {
-      // 1. Extract text
+      // 1. Extract text from the uploaded file (PDF/DOCX/TXT).
       const text = await extractTextFromUrl(fileUrl, sourceType);
 
-      // 2. Chunk text
-      const chunks = chunkTextWithMetadata(text, {
-        targetTokens: 240,
-        maxTokens: 320,
-        overlapTokens: 60,
-      });
-
-      if (chunks.length === 0) {
-        throw new Error('No valid chunks were produced from extracted text');
-      }
-
-      // 3. Generate embeddings in batches.
-      // Embed an enriched string (title + section + body) so headings/name are
-      // searchable, but keep the raw chunk text for storage and LLM context.
-      const embeddings = await generateEmbeddingsBatch(
-        chunks.map((chunk) => buildEmbeddingInput(documentTitle, chunk.section, chunk.text)),
-      );
-
-      // 4. Upsert into Qdrant
-      const points = chunks.map((chunk, i) => ({
-        id: uuidv4(),
-        vector: embeddings[i],
-        payload: {
-          organizationId,
-          documentId,
-          documentTitle,
-          chunkIndex: i,
-          section: chunk.section,
-          pageNumber: chunk.pageNumber,
-          text: chunk.text,
-        },
-      }));
-
-      await upsertVectors(points);
-
-      // 5. Mark document as ready
-      await DocumentModel.findByIdAndUpdate(documentId, {
-        status: 'ready',
-        chunkCount: chunks.length,
-      });
-
-      logger.info(`Document ${documentId} processed: ${chunks.length} chunks indexed`);
+      // 2-5. Reuse the shared chunk → embed → upsert → mark-ready pipeline.
+      await this.indexText(documentId, organizationId, documentTitle, text);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown processing error';
+      await this.markProcessingFailed(documentId, error);
+    }
+  }
+
+  /**
+   * Shared ingestion pipeline used by BOTH file uploads and website-URL
+   * training. Takes already-extracted plain text and turns it into searchable
+   * vectors. This is the single embedding/storage path — no duplicated logic.
+   */
+  private async indexText(
+    documentId: string,
+    organizationId: string,
+    documentTitle: string,
+    text: string,
+  ): Promise<void> {
+    // Chunk text (same settings the document pipeline has always used).
+    const chunks = chunkTextWithMetadata(text, {
+      targetTokens: 240,
+      maxTokens: 320,
+      overlapTokens: 60,
+    });
+
+    if (chunks.length === 0) {
+      throw new Error('No valid chunks were produced from extracted text');
+    }
+
+    // Generate embeddings in batches. Embed an enriched string (title + section
+    // + body) so headings/name are searchable, but keep the raw chunk text for
+    // storage and LLM context.
+    const embeddings = await generateEmbeddingsBatch(
+      chunks.map((chunk) => buildEmbeddingInput(documentTitle, chunk.section, chunk.text)),
+    );
+
+    // Upsert into Qdrant.
+    const points = chunks.map((chunk, i) => ({
+      id: uuidv4(),
+      vector: embeddings[i],
+      payload: {
+        organizationId,
+        documentId,
+        documentTitle,
+        chunkIndex: i,
+        section: chunk.section,
+        pageNumber: chunk.pageNumber,
+        text: chunk.text,
+      },
+    }));
+
+    await upsertVectors(points);
+
+    // Mark document as ready.
+    await DocumentModel.findByIdAndUpdate(documentId, {
+      status: 'ready',
+      chunkCount: chunks.length,
+    });
+
+    logger.info(`Document ${documentId} processed: ${chunks.length} chunks indexed`);
+  }
+
+  private async markProcessingFailed(documentId: string, error: unknown): Promise<void> {
+    const message = error instanceof Error ? error.message : 'Unknown processing error';
+    await DocumentModel.findByIdAndUpdate(documentId, {
+      status: 'failed',
+      processingError: message.slice(0, 500),
+    });
+    logger.error(`Document ${documentId} processing failed:`, error);
+  }
+
+  /**
+   * Train the chatbot from a website URL. Creates a document record immediately
+   * and crawls + indexes the site in the background, mirroring the file upload
+   * flow so the rest of the platform (retrieval, deletion, limits) treats a
+   * website source exactly like any other knowledge document.
+   */
+  async trainFromUrl(organizationId: string, url: string, maxPages: number): Promise<IDocument> {
+    let hostname = url;
+    try {
+      hostname = new URL(url).hostname;
+    } catch {
+      // Validation in the controller already guarantees a parseable URL; this is
+      // only a defensive fallback for the human-readable title.
+    }
+
+    const doc = await DocumentModel.create({
+      organizationId,
+      title: hostname,
+      fileUrl: url,
+      sourceUrl: url,
+      sourceType: 'url',
+      status: 'processing',
+    });
+
+    this.processUrlAsync(doc._id.toString(), organizationId, url, maxPages).catch(
+      (error: unknown) => {
+        logger.error(`Website processing failed for ${doc._id.toString()}:`, error);
+      },
+    );
+
+    return doc;
+  }
+
+  private async processUrlAsync(
+    documentId: string,
+    organizationId: string,
+    url: string,
+    maxPages: number,
+  ): Promise<void> {
+    try {
+      // 1. Crawl + clean the website into plain text.
+      const crawl = await crawlWebsite(url, maxPages);
+
+      // Use the crawled site title (when available) for a friendlier label.
+      const documentTitle = crawl.title || url;
       await DocumentModel.findByIdAndUpdate(documentId, {
-        status: 'failed',
-        processingError: message.slice(0, 500),
+        title: documentTitle.slice(0, 200),
+        pagesCrawled: crawl.pagesCrawled,
       });
-      logger.error(`Document ${documentId} processing failed:`, error);
+
+      // 2-5. Reuse the exact same chunk → embed → upsert pipeline as files.
+      await this.indexText(documentId, organizationId, documentTitle, crawl.text);
+    } catch (error) {
+      await this.markProcessingFailed(documentId, error);
     }
   }
 
@@ -185,15 +274,25 @@ export class DocumentService {
 
     // Actually re-run extraction → chunking → embedding → indexing.
     // Without this the document would stay stuck in "processing" forever.
-    this.processDocumentAsync(
-      documentId,
-      organizationId,
-      doc.fileUrl,
-      doc.sourceType,
-      doc.title,
-    ).catch((error: unknown) => {
-      logger.error(`Document reprocessing failed for ${documentId}:`, error);
-    });
+    // Website sources re-crawl; file sources re-download and re-extract.
+    if (doc.sourceType === 'url') {
+      const maxPages = await resolveCrawlPageLimit(organizationId);
+      this.processUrlAsync(documentId, organizationId, doc.sourceUrl ?? doc.fileUrl, maxPages).catch(
+        (error: unknown) => {
+          logger.error(`Website reprocessing failed for ${documentId}:`, error);
+        },
+      );
+    } else {
+      this.processDocumentAsync(
+        documentId,
+        organizationId,
+        doc.fileUrl,
+        doc.sourceType,
+        doc.title,
+      ).catch((error: unknown) => {
+        logger.error(`Document reprocessing failed for ${documentId}:`, error);
+      });
+    }
 
     logger.info(`Reprocessing started for document ${documentId}`);
     return updated ?? doc;

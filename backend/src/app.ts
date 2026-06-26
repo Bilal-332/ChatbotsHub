@@ -18,6 +18,8 @@ import { documentRouter } from '@modules/documents/document.routes';
 import { chatRouter } from '@modules/chat/chat.routes';
 import { adminRouter } from '@modules/admin/admin.routes';
 import { contactRouter } from '@modules/contact/contact.routes';
+import { leadRouter } from '@modules/leads/lead.routes';
+import { analyticsRouter } from '@modules/analytics/analytics.routes';
 
 export function createApp(): express.Application {
   const app = express();
@@ -49,7 +51,7 @@ export function createApp(): express.Application {
       },
       credentials: true,
       methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'x-visitor-id'],
     }),
   );
 
@@ -97,6 +99,8 @@ export function createApp(): express.Application {
   app.use('/api/documents', documentRouter);
   app.use('/api/chat', chatRouter);
   app.use('/api/contact', contactRouter);
+  app.use('/api/leads', leadRouter);
+  app.use('/api/analytics', analyticsRouter);
 
   // ─── 404 Handler ────────────────────────────────────────────────────────────
   app.use(notFoundHandler);

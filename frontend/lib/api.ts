@@ -10,6 +10,15 @@ import type {
   OrgStats,
   AdminOrganization,
   AdminUser,
+  Lead,
+  LeadStatus,
+  AnalyticsRange,
+  AnalyticsOverview,
+  AnalyticsEngagement,
+  AnalyticsKnowledge,
+  TopQuestion,
+  TimeSeriesPoint,
+  AnalyticsLeadStats,
 } from '@appTypes/index';
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
@@ -89,10 +98,72 @@ export const documentApi = {
   upload: (payload: { fileUrl: string; originalName: string }) =>
     apiClient.post<ApiSuccess<Document>>('/documents', payload),
 
+  trainUrl: (payload: { url: string }) =>
+    apiClient.post<ApiSuccess<Document>>('/documents/url', payload),
+
   delete: (id: string) => apiClient.delete<ApiSuccess<null>>(`/documents/${id}`),
 
   reprocess: (id: string) =>
     apiClient.post<ApiSuccess<Document>>(`/documents/${id}/reprocess`),
+};
+
+// ─── Leads ───────────────────────────────────────────────────────────────────
+export const leadApi = {
+  list: (params: { page?: number; limit?: number; status?: LeadStatus } = {}) => {
+    const query = new URLSearchParams({
+      page: String(params.page ?? 1),
+      limit: String(params.limit ?? 20),
+    });
+    if (params.status) query.set('status', params.status);
+    return apiClient.get<ApiSuccess<Paginated<Lead>>>(`/leads?${query.toString()}`);
+  },
+
+  updateStatus: (id: string, status: LeadStatus) =>
+    apiClient.patch<ApiSuccess<Lead>>(`/leads/${id}`, { status }),
+
+  exportUrl: (status?: LeadStatus) => {
+    const query = new URLSearchParams();
+    if (status) query.set('status', status);
+    const qs = query.toString();
+    return `/leads/export${qs ? `?${qs}` : ''}`;
+  },
+
+  exportCsv: (status?: LeadStatus) => {
+    const query = new URLSearchParams();
+    if (status) query.set('status', status);
+    const qs = query.toString();
+    return apiClient.get(`/leads/export${qs ? `?${qs}` : ''}`, { responseType: 'blob' });
+  },
+};
+
+// ─── Analytics ────────────────────────────────────────────────────────────────
+function analyticsParams(range: AnalyticsRange, from?: string, to?: string): string {
+  const query = new URLSearchParams({ range });
+  if (range === 'custom') {
+    if (from) query.set('from', from);
+    if (to) query.set('to', to);
+  }
+  return query.toString();
+}
+
+export const analyticsApi = {
+  overview: (range: AnalyticsRange, from?: string, to?: string) =>
+    apiClient.get<ApiSuccess<AnalyticsOverview>>(`/analytics/overview?${analyticsParams(range, from, to)}`),
+
+  engagement: (range: AnalyticsRange, from?: string, to?: string) =>
+    apiClient.get<ApiSuccess<AnalyticsEngagement>>(`/analytics/engagement?${analyticsParams(range, from, to)}`),
+
+  knowledge: (range: AnalyticsRange, from?: string, to?: string) =>
+    apiClient.get<ApiSuccess<AnalyticsKnowledge>>(`/analytics/knowledge?${analyticsParams(range, from, to)}`),
+
+  topQuestions: (range: AnalyticsRange, from?: string, to?: string) =>
+    apiClient.get<ApiSuccess<TopQuestion[]>>(`/analytics/top-questions?${analyticsParams(range, from, to)}`),
+
+  timeseries: (range: AnalyticsRange, from?: string, to?: string) =>
+    apiClient.get<ApiSuccess<TimeSeriesPoint[]>>(`/analytics/timeseries?${analyticsParams(range, from, to)}`),
+
+  leads: (range: AnalyticsRange, from?: string, to?: string) =>
+    apiClient.get<ApiSuccess<AnalyticsLeadStats>>(`/analytics/leads?${analyticsParams(range, from, to)}`),
 };
 
 // ─── Super Admin ────────────────────────────────────────────────────────────

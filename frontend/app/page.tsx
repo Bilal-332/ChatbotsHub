@@ -24,6 +24,10 @@ const FeaturesSection = dynamic(
   () => import('@components/landing/FeaturesSection').then((m) => m.FeaturesSection),
 );
 
+const NewFeaturesSection = dynamic(
+  () => import('@components/landing/NewFeaturesSection').then((m) => m.NewFeaturesSection),
+);
+
 const PricingSection = dynamic(
   () => import('@components/landing/PricingSection').then((m) => m.PricingSection),
 );
@@ -58,6 +62,7 @@ export default function LandingPage() {
         <HeroSection />
         <HowItWorksSection />
         <FeaturesSection />
+        <NewFeaturesSection />
         <PricingSection />
         <DashboardPreviewSection />
         <FaqSection />

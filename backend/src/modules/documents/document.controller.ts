@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { documentService } from './document.service';
+import { documentService, resolveCrawlPageLimit } from './document.service';
+import { assertSafePublicUrl } from './urlValidator';
 import { sendSuccess, sendCreated } from '@shared/apiResponse';
 import { AppError } from '@shared/errors';
 import type { AuthenticatedRequest } from '@shared/types';
@@ -32,6 +33,28 @@ export class DocumentController {
     );
 
     sendCreated(res, doc, 'Document uploaded and processing started');
+  }
+
+  async trainUrl(req: Request, res: Response): Promise<void> {
+    const { organizationId } = (req as AuthenticatedRequest).user;
+    const { url } = req.body as { url?: unknown };
+
+    if (typeof url !== 'string' || !url.trim()) {
+      throw new AppError('A website URL is required', 400, 'INVALID_URL');
+    }
+
+    // SSRF-safe validation: rejects localhost, private/internal IPs, and hosts
+    // that resolve to private networks. Throws a 400 AppError when unsafe.
+    const validated = await assertSafePublicUrl(url.trim());
+
+    // The plan-limit middleware attaches the per-plan page cap.
+    const maxPages =
+      (req as Request & { crawlPageLimit?: number }).crawlPageLimit ??
+      (await resolveCrawlPageLimit(organizationId));
+
+    const doc = await documentService.trainFromUrl(organizationId, validated.url, maxPages);
+
+    sendCreated(res, doc, 'Website training started');
   }
 
   async list(req: Request, res: Response): Promise<void> {

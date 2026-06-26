@@ -34,6 +34,38 @@ export async function checkDocumentLimit(
 }
 
 /**
+ * Check if the organization can crawl another website. Website sources count as
+ * documents, so this enforces the document cap and attaches the plan's
+ * per-crawl page limit to the request for the crawler to honor.
+ */
+export async function checkCrawlLimit(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): Promise<void> {
+  const { organizationId } = (req as AuthenticatedRequest).user;
+
+  const org = await Organization.findById(organizationId).select('plan').lean();
+  if (!org) throw new ForbiddenError('Organization not found');
+
+  const limits = PLAN_LIMITS[org.plan];
+  const docCount = await DocumentModel.countDocuments({
+    organizationId,
+    status: { $ne: 'failed' },
+  });
+
+  if (docCount >= limits.maxDocuments) {
+    throw new PlanLimitError(
+      `Knowledge source limit reached (${limits.maxDocuments} max on ${org.plan} plan). Please upgrade.`,
+    );
+  }
+
+  (req as Request & { crawlPageLimit?: number }).crawlPageLimit = limits.maxCrawlPages;
+
+  next();
+}
+
+/**
  * Check and increment monthly query count before allowing a chat query.
  */
 export async function checkQueryLimit(

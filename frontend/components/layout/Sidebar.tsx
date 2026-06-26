@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bot, LayoutDashboard, FileText, Settings, LogOut, Menu, X, Code2, Shield, Users, Building2 } from 'lucide-react';
+import { Bot, LayoutDashboard, FileText, Settings, LogOut, Menu, X, Code2, Shield, Users, Building2, Database, UserPlus, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
@@ -11,6 +11,9 @@ import { motion } from 'framer-motion';
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Knowledge Base', href: '/dashboard/documents', icon: FileText },
+  { name: 'Knowledge Sources', href: '/dashboard/knowledge-sources', icon: Database },
+  { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+  { name: 'Leads', href: '/dashboard/leads', icon: UserPlus },
   { name: 'API & Integration', href: '/dashboard/api', icon: Code2 },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
@@ -45,7 +48,7 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-2 px-4 py-6">
+      <nav className="flex-1 space-y-2 overflow-y-auto px-4 py-6">
         {navigation.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
           return (

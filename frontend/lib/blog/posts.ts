@@ -694,6 +694,279 @@ export const BLOG_POSTS: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: 'train-chatbot-from-website-url',
+    coverImage:
+      'https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?auto=format&fit=crop&w=1200&q=80',
+    title: 'How to Train Your AI Chatbot from a Website URL',
+    description:
+      'Train an AI chatbot directly from a website URL. ChatbotsHub crawls your pages, cleans the HTML, and indexes the content automatically — no manual uploads.',
+    excerpt:
+      'Paste a URL and let ChatbotsHub crawl, clean, and index your website into a chatbot — no copy-paste, no uploads.',
+    category: 'Features',
+    keywords: [
+      'train chatbot from website',
+      'website chatbot',
+      'crawl website chatbot',
+      'AI chatbot platform',
+    ],
+    author: AUTHOR,
+    publishedAt: '2026-05-12',
+    updatedAt: '2026-05-12',
+    readingMinutes: 7,
+    coverAlt: 'A website being crawled and turned into an AI chatbot knowledge base',
+    content: [
+      {
+        type: 'p',
+        text: 'Uploading documents is great, but your most up-to-date knowledge usually already lives on your website. With **website URL training**, you can point ChatbotsHub at your site and it will crawl the pages, clean the content, and turn it into a trained chatbot — without copying and pasting a single paragraph.',
+      },
+      {
+        type: 'p',
+        text: 'This feature sits right alongside [document training](/blog/how-to-train-a-chatbot-on-your-documents): you can mix uploaded files and crawled websites in the same knowledge base.',
+      },
+      { type: 'h2', text: 'What website URL training does' },
+      {
+        type: 'p',
+        text: 'You enter a single URL — for example your homepage, help center, or docs site. ChatbotsHub then visits the public pages on that domain, extracts the meaningful text, and indexes it using the same retrieval pipeline that powers document training. The result is a chatbot that can answer questions using everything published on your site.',
+      },
+      { type: 'h2', text: 'How the crawler works, step by step' },
+      {
+        type: 'ol',
+        items: [
+          'You submit a website URL from the Knowledge Sources tab in your dashboard.',
+          'The URL is validated and checked for safety before any request is made.',
+          'The crawler fetches the page HTML and discovers links on the same domain.',
+          'Navigation, scripts, styles, cookie banners, and footers are stripped out.',
+          'The remaining clean text is chunked, embedded, and stored for retrieval.',
+          'Your chatbot is ready to answer from the crawled content.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'Under the hood this is the same [retrieval-augmented generation](/blog/what-is-rag-retrieval-augmented-generation) flow used for files, so answers stay grounded in your real content.',
+      },
+      { type: 'h2', text: 'Built-in safety' },
+      {
+        type: 'p',
+        text: 'Crawling the open web has to be done responsibly. ChatbotsHub validates every URL and blocks requests to localhost, internal IP addresses, and private networks to prevent server-side request forgery (SSRF). Crawling endpoints are also rate-limited so the feature stays safe and predictable.',
+      },
+      { type: 'h2', text: 'Crawl limits by plan' },
+      {
+        type: 'ul',
+        items: [
+          '**Free:** up to 10 pages per website.',
+          '**Starter:** up to 100 pages per website.',
+          '**Pro:** up to 1,000 pages per website.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'Each crawled website counts as one knowledge source, just like an uploaded document. Not sure which plan fits? Read our [AI chatbot pricing guide](/blog/ai-chatbot-pricing-guide).',
+      },
+      { type: 'h2', text: 'Best practices for clean results' },
+      {
+        type: 'ul',
+        items: [
+          'Point the crawler at content-rich sections like your docs or help center.',
+          'Keep your pages updated — re-crawl after major content changes.',
+          'Remove or de-index thin pages that add noise instead of answers.',
+          'Combine a website crawl with focused FAQ documents for the best coverage.',
+        ],
+      },
+      {
+        type: 'quote',
+        text: 'Your website is already your best knowledge base — website training just makes it answer questions.',
+      },
+      { type: 'h2', text: 'Website training vs document upload' },
+      {
+        type: 'p',
+        text: 'Use website training when your knowledge already lives online and changes often. Use [document upload](/blog/how-to-train-a-chatbot-on-your-documents) for PDFs, contracts, and internal files that aren’t published on the web. Most teams use both together.',
+      },
+      {
+        type: 'cta',
+        label: 'Train a chatbot from your website',
+        href: '/auth/register',
+        text: 'Paste a URL and watch it learn.',
+      },
+    ],
+  },
+  {
+    slug: 'ai-chatbot-lead-capture',
+    coverImage:
+      'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=80',
+    title: 'AI Chatbot Lead Capture: Turn Conversations into Customers',
+    description:
+      'Capture leads automatically with an AI chatbot. Detect buying intent, show a smart lead form, notify your team instantly, and export leads to CSV.',
+    excerpt:
+      'Your chatbot already talks to buyers — lead capture turns those conversations into qualified leads automatically.',
+    category: 'Features',
+    keywords: [
+      'chatbot lead capture',
+      'lead generation chatbot',
+      'AI lead qualification',
+      'business chatbot',
+    ],
+    author: AUTHOR,
+    publishedAt: '2026-05-26',
+    updatedAt: '2026-05-26',
+    readingMinutes: 7,
+    coverAlt: 'An AI chatbot converting a conversation into a captured business lead',
+    content: [
+      {
+        type: 'p',
+        text: 'Every conversation with a potential customer is an opportunity — and most of them slip away. The **lead capture system** in ChatbotsHub turns chatbot conversations into qualified business leads automatically, so you never miss a buyer who was ready to talk.',
+      },
+      {
+        type: 'p',
+        text: 'It’s one of the most direct ways a [business chatbot grows revenue](/blog/business-chatbot-benefits): instead of just answering questions, your bot captures contact details at exactly the right moment.',
+      },
+      { type: 'h2', text: 'AI intent detection decides when to ask' },
+      {
+        type: 'p',
+        text: 'Nobody likes a form that pops up too early. ChatbotsHub uses AI intent classification to read each message and detect buying signals before showing a lead form. For example:',
+      },
+      {
+        type: 'ul',
+        items: [
+          '“How much will this cost me?” is detected as **pricing** intent.',
+          '“Can someone from your team call me?” is detected as **contact** intent.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'When the bot recognizes pricing or contact intent, it shows a lead form right inside the chat — without interrupting the conversation.',
+      },
+      { type: 'h2', text: 'What the lead form captures' },
+      {
+        type: 'ul',
+        items: [
+          'Name and email (required) to identify and reach the lead.',
+          'Phone, company, and a short message (optional) for richer context.',
+          'The originating chatbot and detected intent, captured automatically.',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'The form appears once per visitor session, so returning visitors aren’t asked again after they’ve shared their details. After submission, the conversation simply continues.',
+      },
+      { type: 'h2', text: 'Instant notifications and a clean pipeline' },
+      {
+        type: 'ol',
+        items: [
+          'Every new lead is saved to your dashboard the moment it’s submitted.',
+          'Your admin gets an email notification so you can follow up fast.',
+          'Leads move through statuses: New, Contacted, Qualified, and Closed.',
+          'Export everything to CSV for your CRM or outreach tools.',
+        ],
+      },
+      {
+        type: 'quote',
+        text: 'Speed wins deals. Capturing a lead the instant intent appears beats following up a day later.',
+      },
+      { type: 'h2', text: 'Tips to capture more (and better) leads' },
+      {
+        type: 'ul',
+        items: [
+          'Train your chatbot well so it earns trust before asking for details — start with [training on your documents](/blog/how-to-train-a-chatbot-on-your-documents).',
+          'Keep pricing and contact information available so intent triggers fire naturally.',
+          'Review captured leads regularly and update statuses to keep your pipeline clean.',
+          'Pair lead capture with [analytics](/blog/chatbot-analytics-dashboard) to measure conversion rate over time.',
+        ],
+      },
+      {
+        type: 'cta',
+        label: 'Start capturing leads',
+        href: '/auth/register',
+        text: 'Turn chatbot conversations into pipeline.',
+      },
+    ],
+  },
+  {
+    slug: 'chatbot-analytics-dashboard',
+    coverImage:
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+    title: 'Chatbot Analytics: Measure Conversations, Engagement & Conversions',
+    description:
+      'Measure your AI chatbot with a built-in analytics dashboard. Track conversations, engagement, answered vs unanswered queries, top questions, and lead conversion.',
+    excerpt:
+      'You can’t improve what you don’t measure. The analytics dashboard shows exactly how your chatbot performs.',
+    category: 'Features',
+    keywords: [
+      'chatbot analytics',
+      'chatbot dashboard',
+      'conversation analytics',
+      'AI chatbot platform',
+    ],
+    author: AUTHOR,
+    publishedAt: '2026-06-09',
+    updatedAt: '2026-06-09',
+    readingMinutes: 8,
+    coverAlt: 'An analytics dashboard showing chatbot conversations and conversion charts',
+    content: [
+      {
+        type: 'p',
+        text: 'A chatbot that you can’t measure is a black box. The **analytics dashboard** in ChatbotsHub gives you clear visibility into how visitors use your chatbot, how well it answers, and how many conversations turn into leads — all in one place.',
+      },
+      { type: 'h2', text: 'Overview: the metrics that matter' },
+      {
+        type: 'ul',
+        items: [
+          '**Total conversations** — how many chat sessions your bot handled.',
+          '**Unique visitors** — how many distinct people engaged.',
+          '**Total messages** — overall conversation volume.',
+          '**Leads generated** — conversations converted via [lead capture](/blog/ai-chatbot-lead-capture).',
+        ],
+      },
+      { type: 'h2', text: 'Engagement: how deep conversations go' },
+      {
+        type: 'ul',
+        items: [
+          '**Average messages per session** shows how engaging your bot is.',
+          '**Average session duration** reveals how long visitors stay.',
+          '**Bounce rate** tracks single-message sessions that didn’t go further.',
+        ],
+      },
+      { type: 'h2', text: 'Knowledge quality: is your bot actually answering?' },
+      {
+        type: 'p',
+        text: 'This is where analytics becomes actionable. ChatbotsHub tracks **answered vs unanswered queries** and an average **confidence score** for retrieved answers. A rising unanswered count is a direct signal that you have knowledge gaps to fill.',
+      },
+      {
+        type: 'p',
+        text: 'When you spot gaps, close them by adding content — either by [training on documents](/blog/how-to-train-a-chatbot-on-your-documents) or [crawling a website URL](/blog/train-chatbot-from-website-url).',
+      },
+      { type: 'h2', text: 'Top questions and trends' },
+      {
+        type: 'p',
+        text: 'See the most-asked questions ranked by frequency, plus trends over time for conversations, leads, and engagement. These insights tell you what your audience cares about most — perfect for prioritizing new content and FAQs.',
+      },
+      { type: 'h2', text: 'Flexible date filters' },
+      {
+        type: 'ol',
+        items: [
+          'Today — a quick pulse on current activity.',
+          '7 days — short-term trends and recent changes.',
+          '30 and 90 days — longer-term performance.',
+          'Custom range — zoom in on a campaign or launch window.',
+        ],
+      },
+      {
+        type: 'quote',
+        text: 'The unanswered-questions chart is the single most valuable view — it tells you exactly what to add next.',
+      },
+      { type: 'h2', text: 'Turn insight into action' },
+      {
+        type: 'p',
+        text: 'Use analytics as a weekly habit: check unanswered queries, add missing knowledge, watch your answer rate climb, and track how conversions improve. Combined with [lead capture](/blog/ai-chatbot-lead-capture), you get a complete picture from first message to closed lead.',
+      },
+      {
+        type: 'cta',
+        label: 'See your chatbot analytics',
+        href: '/auth/register',
+        text: 'Measure, improve, and convert more.',
+      },
+    ],
+  },
 ];
 
 export function getAllPosts(): BlogPost[] {

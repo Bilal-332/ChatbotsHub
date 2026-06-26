@@ -7,6 +7,16 @@ const OTP_EXPIRY_MINUTES = 10;
 
 let resendClient: Resend | null = null;
 
+/** Escape user-supplied values before interpolating them into email HTML. */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function ensureResendClient(): Resend {
   if (resendClient) return resendClient;
 
@@ -51,6 +61,64 @@ export async function sendPasswordResetOtp(to: string, otp: string): Promise<voi
       }
     }
     throw new AppError('Failed to send reset email', 502, 'EMAIL_SEND_FAILED');
+  }
+}
+
+export interface LeadNotificationPayload {
+  leadName: string;
+  leadEmail: string;
+  phone?: string;
+  company?: string;
+  message?: string;
+  botName: string;
+  intent?: string;
+}
+
+/**
+ * Notify an organization admin that a new lead was captured by their chatbot.
+ * Designed to be called fire-and-forget: it throws on failure so callers can
+ * log, but lead persistence must never depend on email succeeding.
+ */
+export async function sendLeadNotificationEmail(
+  to: string,
+  payload: LeadNotificationPayload,
+): Promise<void> {
+  const resend = ensureResendClient();
+  const from = config.resend.from as string;
+
+  const lines = [
+    `Name: ${payload.leadName}`,
+    `Email: ${payload.leadEmail}`,
+    payload.phone ? `Phone: ${payload.phone}` : null,
+    payload.company ? `Company: ${payload.company}` : null,
+    payload.intent ? `Intent: ${payload.intent}` : null,
+    payload.message ? `\nMessage:\n${payload.message}` : null,
+  ].filter((line): line is string => line !== null);
+
+  const result = await resend.emails.send({
+    from,
+    to,
+    reply_to: payload.leadEmail,
+    subject: `[ChatbotsHub] New lead from ${payload.botName}: ${payload.leadName}`,
+    text: `You captured a new lead via ${payload.botName}.\n\n${lines.join('\n')}`,
+    html: `
+      <h2>New lead captured by ${escapeHtml(payload.botName)}</h2>
+      <p><strong>Name:</strong> ${escapeHtml(payload.leadName)}</p>
+      <p><strong>Email:</strong> <a href="mailto:${escapeHtml(payload.leadEmail)}">${escapeHtml(payload.leadEmail)}</a></p>
+      ${payload.phone ? `<p><strong>Phone:</strong> ${escapeHtml(payload.phone)}</p>` : ''}
+      ${payload.company ? `<p><strong>Company:</strong> ${escapeHtml(payload.company)}</p>` : ''}
+      ${payload.intent ? `<p><strong>Intent:</strong> ${escapeHtml(payload.intent)}</p>` : ''}
+      ${payload.message ? `<hr /><p>${escapeHtml(payload.message).replace(/\n/g, '<br />')}</p>` : ''}
+    `,
+  });
+
+  if (result.error) {
+    const error = result.error as
+      | string
+      | { message?: string; name?: string; statusCode?: number; code?: string };
+    const message = typeof error === 'string' ? error : error.message ?? JSON.stringify(error);
+    logger.error(`Resend lead notification failed: ${message}`);
+    throw new AppError('Failed to send lead notification', 502, 'EMAIL_SEND_FAILED');
   }
 }
 

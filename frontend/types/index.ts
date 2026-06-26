@@ -24,7 +24,7 @@ export interface Paginated<T> {
 export type UserRole = 'admin' | 'member' | 'super_admin';
 export type PlanName = 'free' | 'starter' | 'pro';
 export type DocumentStatus = 'pending' | 'processing' | 'ready' | 'failed';
-export type DocumentSourceType = 'pdf' | 'docx' | 'txt';
+export type DocumentSourceType = 'pdf' | 'docx' | 'txt' | 'url';
 export type SupportedLanguage = 'auto' | 'en' | 'ar' | 'ur';
 
 export interface PlanExpiryWarning {
@@ -105,6 +105,8 @@ export interface Document {
   status: DocumentStatus;
   chunkCount: number;
   processingError?: string;
+  sourceUrl?: string;
+  pagesCrawled?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -118,6 +120,7 @@ export interface OrgStats {
     maxDocuments: number;
     maxMonthlyQueries: number;
     maxFileSizeMb: number;
+    maxCrawlPages: number;
   };
 }
 
@@ -137,4 +140,66 @@ export interface ChatQueryResult {
   tokensUsed: number;
   sourceChunks: number;
   hasContext: boolean;
+}
+
+// ─── Leads ───────────────────────────────────────────────────────────────────
+export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'closed';
+
+export interface Lead {
+  _id: string;
+  organizationId: string;
+  conversationId?: string;
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  message?: string;
+  sourceBot: string;
+  intent?: string;
+  status: LeadStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── Analytics ───────────────────────────────────────────────────────────────
+export type AnalyticsRange = 'today' | '7d' | '30d' | '90d' | 'custom';
+
+export interface AnalyticsOverview {
+  totalConversations: number;
+  uniqueVisitors: number;
+  totalMessages: number;
+  leadsGenerated: number;
+}
+
+export interface AnalyticsEngagement {
+  avgMessagesPerSession: number;
+  avgSessionDurationSeconds: number;
+  bounceRate: number;
+}
+
+export interface AnalyticsKnowledge {
+  answeredQueries: number;
+  unansweredQueries: number;
+  answerRate: number;
+  avgConfidence: number;
+}
+
+export interface TopQuestion {
+  question: string;
+  count: number;
+}
+
+export interface TimeSeriesPoint {
+  date: string;
+  conversations: number;
+  messages: number;
+  leads: number;
+  answered: number;
+  unanswered: number;
+}
+
+export interface AnalyticsLeadStats {
+  leadsPerDay: { date: string; leads: number }[];
+  conversionRate: number;
+  totalLeads: number;
 }

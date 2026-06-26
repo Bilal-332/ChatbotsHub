@@ -6,6 +6,7 @@ import axios, { AxiosError } from 'axios';
 import { useSearchParams } from 'next/navigation';
 import { resolveAvatarUrl, isRtlText } from '@/lib/utils';
 import type { SupportedLanguage } from '@/types/index';
+import { LeadForm, type LeadFormValues } from '@/components/chat/LeadForm';
 
 interface Message {
   id: string;
@@ -94,9 +95,15 @@ export default function ChatWidgetPage() {
     language: 'auto',
   });
 
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  const [leadSubmitting, setLeadSubmitting] = useState(false);
+  const [leadCaptured, setLeadCaptured] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const conversationIdRef = useRef<string>('');
+  const visitorIdRef = useRef<string>('');
+  const detectedIntentRef = useRef<string>('');
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api';
   const avatarUrl = resolveAvatarUrl(settings.avatarUrl);
@@ -127,6 +134,38 @@ export default function ChatWidgetPage() {
       window.localStorage.setItem(storageKey, generatedId);
     } catch {
       // Ignore in cross-origin iframes
+    }
+  }, [apiKey]);
+
+  // Persistent visitor id (for unique-visitor analytics) + once-per-visitor
+  // lead-capture flag, both scoped to this API key.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const newId = () =>
+      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+    const visitorKey = `chatbotshub:visitor:${apiKey || 'anonymous'}`;
+    try {
+      let visitorId = window.localStorage.getItem(visitorKey);
+      if (!visitorId) {
+        visitorId = newId();
+        window.localStorage.setItem(visitorKey, visitorId);
+      }
+      visitorIdRef.current = visitorId;
+    } catch {
+      visitorIdRef.current = newId();
+    }
+
+    try {
+      const captured = window.localStorage.getItem(`chatbotshub:lead-captured:${apiKey || 'anonymous'}`);
+      if (captured === '1') {
+        setLeadCaptured(true);
+      }
+    } catch {
+      // Ignore in restricted iframes.
     }
   }, [apiKey]);
 
@@ -205,7 +244,7 @@ export default function ChatWidgetPage() {
       }>(
         `${API_BASE}/chat/query`,
         { question, conversationId: conversationIdRef.current || undefined },
-        { headers: { 'x-api-key': apiKey } },
+        { headers: { 'x-api-key': apiKey, 'x-visitor-id': visitorIdRef.current } },
       );
 
       const { answer, hasContext } = response.data.data;
@@ -213,6 +252,8 @@ export default function ChatWidgetPage() {
         ...prev,
         { id: (Date.now() + 1).toString(), role: 'assistant', content: answer, hasContext },
       ]);
+
+      void maybeTriggerLeadForm(question);
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMsg =
@@ -223,6 +264,75 @@ export default function ChatWidgetPage() {
       ]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Ask the backend to classify buyer intent; show the lead form when the
+  // visitor signals pricing/contact interest and hasn't already been captured.
+  const maybeTriggerLeadForm = async (question: string) => {
+    if (leadCaptured || showLeadForm || !apiKey) return;
+    try {
+      const res = await axios.post<{
+        data: { intent: string; shouldCaptureLead: boolean };
+      }>(
+        `${API_BASE}/leads/intent`,
+        { message: question },
+        { headers: { 'x-api-key': apiKey } },
+      );
+      if (res.data.data?.shouldCaptureLead) {
+        detectedIntentRef.current = res.data.data.intent ?? '';
+        setShowLeadForm(true);
+      }
+    } catch {
+      // Intent detection is best-effort; never disrupt the conversation.
+    }
+  };
+
+  const handleLeadSubmit = async (values: LeadFormValues) => {
+    if (!apiKey) return;
+    setLeadSubmitting(true);
+    try {
+      await axios.post(
+        `${API_BASE}/leads`,
+        {
+          name: values.name,
+          email: values.email,
+          phone: values.phone || undefined,
+          company: values.company || undefined,
+          message: values.message || undefined,
+          conversationId: conversationIdRef.current || undefined,
+          intent: detectedIntentRef.current || undefined,
+        },
+        { headers: { 'x-api-key': apiKey } },
+      );
+
+      setShowLeadForm(false);
+      setLeadCaptured(true);
+      try {
+        window.localStorage.setItem(`chatbotshub:lead-captured:${apiKey || 'anonymous'}`, '1');
+      } catch {
+        // Ignore in restricted iframes.
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 2).toString(),
+          role: 'assistant',
+          content: 'Thank you! Your details have been received. Our team will reach out to you soon. How else can I help?',
+        },
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 2).toString(),
+          role: 'assistant',
+          content: 'Sorry, something went wrong submitting your details. Please try again.',
+        },
+      ]);
+    } finally {
+      setLeadSubmitting(false);
     }
   };
 
@@ -317,6 +427,15 @@ export default function ChatWidgetPage() {
 
         <div ref={messagesEndRef} />
       </div>
+
+      {showLeadForm && (
+        <LeadForm
+          primaryColor={primaryColor}
+          isSubmitting={leadSubmitting}
+          onSubmit={handleLeadSubmit}
+          onDismiss={() => setShowLeadForm(false)}
+        />
+      )}
 
       <div className="border-t border-gray-100 px-4 py-3">
         <form onSubmit={sendMessage} className="flex items-center gap-2">

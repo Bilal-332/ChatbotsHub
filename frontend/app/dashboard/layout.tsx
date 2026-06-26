@@ -22,7 +22,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex min-h-screen bg-background text-text-primary overflow-hidden relative">
+    <div className="flex h-screen bg-background text-text-primary overflow-hidden relative">
       <AnimatedBackground />
       <Sidebar />
       <main className="min-w-0 flex-1 overflow-auto relative z-10">

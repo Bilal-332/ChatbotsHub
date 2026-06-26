@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { AxiosError } from 'axios';
 import { documentApi } from '@lib/api';
 import type { Document } from '@appTypes/index';
-import { FileText, Trash2, RefreshCw, Loader2, AlertCircle } from 'lucide-react';
+import { FileText, Globe, Trash2, RefreshCw, Loader2, AlertCircle, ExternalLink } from 'lucide-react';
 
 function StatusBadge({ status }: { status: Document['status'] }) {
   const map: Record<Document['status'], { cls: string; label: string }> = {
@@ -51,18 +51,30 @@ export function DocumentCard({ doc }: { doc: Document }) {
     year: 'numeric',
   });
 
+  const isWebsite = doc.sourceType === 'url';
+
   return (
     <div className="card flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex min-w-0 items-start gap-4">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-50">
-          <FileText className="h-5 w-5 text-primary-600" />
+          {isWebsite ? (
+            <Globe className="h-5 w-5 text-primary-600" />
+          ) : (
+            <FileText className="h-5 w-5 text-primary-600" />
+          )}
         </div>
         <div className="min-w-0">
           <p className="truncate font-medium text-white">{doc.title}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
-            <span className="uppercase">{doc.sourceType}</span>
+            <span className="uppercase">{isWebsite ? 'Website' : doc.sourceType}</span>
             <span>•</span>
             <span>{createdDate}</span>
+            {isWebsite && typeof doc.pagesCrawled === 'number' && doc.pagesCrawled > 0 && (
+              <>
+                <span>•</span>
+                <span>{doc.pagesCrawled} pages crawled</span>
+              </>
+            )}
             {doc.chunkCount > 0 && (
               <>
                 <span>•</span>
@@ -70,6 +82,17 @@ export function DocumentCard({ doc }: { doc: Document }) {
               </>
             )}
           </div>
+          {isWebsite && doc.sourceUrl && (
+            <a
+              href={doc.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-flex max-w-full items-center gap-1 truncate text-xs text-primary-400 hover:text-primary-300"
+            >
+              <ExternalLink className="h-3 w-3 shrink-0" />
+              <span className="truncate">{doc.sourceUrl}</span>
+            </a>
+          )}
           {doc.status === 'failed' && doc.processingError && (
             <div className="mt-2 flex items-start gap-1.5 text-xs text-red-600">
               <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />

@@ -251,6 +251,10 @@ export interface ChatResponse {
   tokensUsed: number;
   sourceChunks: number;
   hasContext: boolean;
+  /** Whether the assistant could meaningfully respond (false = no-answer fallback). For analytics. */
+  answered?: boolean;
+  /** Retrieval confidence for knowledge-mode answers, in [0, 1]. For analytics. */
+  confidence?: number;
 }
 
 export class ChatService {
@@ -308,6 +312,7 @@ export class ChatService {
         tokensUsed: 0,
         sourceChunks: 0,
         hasContext: false,
+        answered: true,
       };
     }
 
@@ -333,6 +338,7 @@ export class ChatService {
         tokensUsed: 0,
         sourceChunks: 0,
         hasContext: false,
+        answered: true,
       };
     }
 
@@ -364,6 +370,7 @@ export class ChatService {
         tokensUsed,
         sourceChunks: 0,
         hasContext: false,
+        answered: true,
       };
     }
 
@@ -382,6 +389,7 @@ export class ChatService {
         tokensUsed: 0,
         sourceChunks: 0,
         hasContext: false,
+        answered: false,
       };
     }
 
@@ -436,6 +444,7 @@ export class ChatService {
         tokensUsed: 0,
         sourceChunks: 0,
         hasContext: false,
+        answered: false,
       };
     }
 
@@ -456,6 +465,8 @@ export class ChatService {
         tokensUsed: 0,
         sourceChunks: 0,
         hasContext: false,
+        answered: false,
+        confidence,
       };
     }
 
@@ -494,6 +505,8 @@ export class ChatService {
       tokensUsed,
       sourceChunks: relevantChunks.length,
       hasContext: true,
+      answered: true,
+      confidence,
     };
   }
 }

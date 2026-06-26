@@ -195,8 +195,8 @@ export default function DashboardPage() {
                       <p className="truncate text-sm font-bold text-text-primary group-hover:text-primary transition-colors">{doc.title}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-[10px] font-bold tracking-wider uppercase text-text-secondary">{doc.sourceType}</p>
-                        <span className="text-text-secondary/30">•</span>
-                        <p className="text-xs text-text-secondary">Added just now</p>
+                        {/* <span className="text-text-secondary/30">•</span>
+                        <p className="text-xs text-text-secondary">Added just now</p> */}
                       </div>
                     </div>
                   </div>

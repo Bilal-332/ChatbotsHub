@@ -10,6 +10,8 @@ export interface IDocument extends MongooseDocument {
   status: DocumentStatus;
   chunkCount: number;
   processingError?: string;
+  sourceUrl?: string;
+  pagesCrawled?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,7 +38,7 @@ const documentSchema = new Schema<IDocument>(
     },
     sourceType: {
       type: String,
-      enum: ['pdf', 'docx', 'txt'],
+      enum: ['pdf', 'docx', 'txt', 'url'],
       required: true,
     },
     status: {
@@ -52,6 +54,15 @@ const documentSchema = new Schema<IDocument>(
     processingError: {
       type: String,
       maxlength: 500,
+    },
+    sourceUrl: {
+      type: String,
+      trim: true,
+      maxlength: 2048,
+    },
+    pagesCrawled: {
+      type: Number,
+      min: 0,
     },
   },
   {

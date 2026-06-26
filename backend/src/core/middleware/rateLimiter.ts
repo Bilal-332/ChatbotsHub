@@ -1,5 +1,6 @@
 import rateLimit from 'express-rate-limit';
 import { config } from '@shared/config';
+import type { AuthenticatedRequest } from '@shared/types';
 
 export const globalRateLimiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
@@ -27,6 +28,34 @@ export const chatRateLimiter = rateLimit({
     success: false,
     message: 'Chat rate limit exceeded. Please slow down.',
     code: 'CHAT_RATE_LIMIT',
+  },
+  skip: (_req) => process.env.NODE_ENV === 'test',
+});
+
+export const crawlRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute window
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => (req as AuthenticatedRequest).user?.organizationId ?? req.ip ?? 'unknown',
+  message: {
+    success: false,
+    message: 'Website training rate limit exceeded. Please wait a moment before adding another URL.',
+    code: 'CRAWL_RATE_LIMIT',
+  },
+  skip: (_req) => process.env.NODE_ENV === 'test',
+});
+
+export const leadRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute window
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => (req.headers['x-api-key'] as string) ?? req.ip ?? 'unknown',
+  message: {
+    success: false,
+    message: 'Too many submissions. Please slow down.',
+    code: 'LEAD_RATE_LIMIT',
   },
   skip: (_req) => process.env.NODE_ENV === 'test',
 });
