@@ -10,9 +10,9 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 const PLAN_LIMITS: Record<string, { maxDocuments: number; maxMonthlyQueries: number }> = {
-  free: { maxDocuments: 3, maxMonthlyQueries: 200 },
-  starter: { maxDocuments: 20, maxMonthlyQueries: 2000 },
-  pro: { maxDocuments: 100, maxMonthlyQueries: 20000 },
+  free: { maxDocuments: 3, maxMonthlyQueries: 100 },
+  starter: { maxDocuments: 10, maxMonthlyQueries: 1000 },
+  pro: { maxDocuments: 20, maxMonthlyQueries: 10000 },
 };
 
 function StatCard({

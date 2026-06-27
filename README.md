@@ -147,9 +147,9 @@ Add to any website:
 
 | Plan | Documents | Monthly Queries | Max File Size |
 |---|---|---|---|
-| Free | 3 | 200 | 5 MB |
-| Starter | 20 | 2,000 | 10 MB |
-| Pro | 100 | 20,000 | 25 MB |
+| Free | 3 | 100 | 5 MB |
+| Starter | 10 | 1,000 | 10 MB |
+| Pro | 20 | 10,000 | 15 MB |
 
 ---
 

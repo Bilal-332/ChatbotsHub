@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 // Mockup data (static, representative of real dashboard)
 const MOCK_STATS = [
   { label: 'Documents Processed', value: '12', max: '20', pct: 60, icon: FileText, color: 'text-primary' },
-  { label: 'Queries this month', value: '1,847', max: '2,000', pct: 92, icon: MessageSquare, color: 'text-emerald-400' },
+  { label: 'Queries this month', value: '923', max: '1,000', pct: 92, icon: MessageSquare, color: 'text-emerald-400' },
   { label: 'Current Plan', value: 'Enterprise', icon: Zap, color: 'text-[#7C4DFF]' },
 ];
 

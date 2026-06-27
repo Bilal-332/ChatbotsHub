@@ -60,7 +60,7 @@ export function LogoFull({ size = 32, textColor = '#111827', className = '' }: L
           fontSize,
           fontWeight: 700,
           color: textColor,
-          fontFamily: 'Inter, system-ui, sans-serif',
+          fontFamily: 'var(--font-logo), "Inter Tight", Inter, system-ui, sans-serif',
           letterSpacing: '-0.03em',
         }}
       >

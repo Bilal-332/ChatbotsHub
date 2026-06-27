@@ -11,20 +11,20 @@ export interface PlanLimits {
 export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
   free: {
     maxDocuments: 3,
-    maxMonthlyQueries: 200,
+    maxMonthlyQueries: 100,
     maxFileSizeMb: 5,
     maxCrawlPages: 10,
   },
   starter: {
-    maxDocuments: 20,
-    maxMonthlyQueries: 2000,
+    maxDocuments: 10,
+    maxMonthlyQueries: 1000,
     maxFileSizeMb: 10,
     maxCrawlPages: 100,
   },
   pro: {
-    maxDocuments: 100,
-    maxMonthlyQueries: 20000,
-    maxFileSizeMb: 25,
+    maxDocuments: 20,
+    maxMonthlyQueries: 10000,
+    maxFileSizeMb: 15,
     maxCrawlPages: 1000,
   },
 };

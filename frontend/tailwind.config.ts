@@ -30,6 +30,7 @@ const config: Config = {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         heading: ['"Inter Tight"', 'system-ui', 'sans-serif'],
+        logo: ['var(--font-logo)', '"Inter Tight"', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

@@ -9,7 +9,7 @@ export function BlogNav() {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/20 border border-primary/30 shadow-glow-primary transition-transform group-hover:scale-105">
             <Bot className="h-5 w-5 text-primary" />
           </div>
-          <span className="text-lg font-bold tracking-tight text-text-primary">
+          <span className="font-logo text-lg font-bold tracking-tight text-text-primary">
             Chatbots<span className="text-primary">Hub</span>
           </span>
         </Link>
