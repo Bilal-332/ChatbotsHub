@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Bot, Github, Twitter } from 'lucide-react';
+import { Github, Twitter } from 'lucide-react';
+import { LogoIcon } from '@/components/brand/Logo';
 
 export function Footer() {
   return (
@@ -8,8 +9,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-3 mb-6" aria-label="ChatbotsHub home">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20 border border-primary/30 shadow-glow-primary">
-                <Bot className="h-5 w-5 text-primary" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black/40 border border-primary/30 shadow-glow-primary overflow-hidden">
+                <LogoIcon size={40} className="h-10 w-10" />
               </div>
               <span className="font-logo text-xl font-bold tracking-tight text-text-primary">
                 Chatbots<span className="text-primary">Hub</span>

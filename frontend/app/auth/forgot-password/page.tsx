@@ -7,9 +7,10 @@ import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { AxiosError } from 'axios';
 import { authApi } from '@/lib/api';
-import { Loader2, Bot, MailCheck } from 'lucide-react';
+import { Loader2, MailCheck } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { AnimatedBackground } from '@/components/shared/AnimatedBackground';
+import { LogoIcon } from '@/components/brand/Logo';
 import { motion } from 'framer-motion';
 
 export default function ForgotPasswordPage() {
@@ -49,9 +50,9 @@ export default function ForgotPasswordPage() {
         >
           <Link
             href="/"
-            className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/20 border border-primary/30 shadow-glow-primary hover:scale-105 transition-transform"
+            className="flex h-16 w-16 items-center justify-center rounded-2xl bg-black/40 border border-primary/30 shadow-glow-primary hover:scale-105 transition-transform"
           >
-            <Bot className="h-8 w-8 text-primary" />
+            <LogoIcon size={48} className="h-12 w-12" />
           </Link>
           <div className="text-center">
             <h1 className="text-2xl font-bold tracking-tight text-text-primary">Reset your password</h1>

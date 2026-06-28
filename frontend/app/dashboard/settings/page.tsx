@@ -6,11 +6,12 @@ import toast from 'react-hot-toast';
 import { AxiosError } from 'axios';
 import { organizationApi } from '@/lib/api';
 import type { Organization, SupportedLanguage } from '@/types/index';
-import { Loader2, Palette, Upload, Bot, Globe } from 'lucide-react';
+import { Loader2, Palette, Upload, Globe, Trash2 } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { motion } from 'framer-motion';
 import { getBackendAssetUrl, resolveAvatarUrl } from '@/lib/utils';
 import { LANGUAGE_OPTIONS } from '@/lib/constants';
+import { LogoIcon } from '@/components/brand/Logo';
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
@@ -67,6 +68,21 @@ export default function SettingsPage() {
     },
     onError: (error: AxiosError<{ message: string }>) => {
       toast.error(error.response?.data?.message ?? 'Failed to upload avatar');
+    },
+  });
+
+  const { mutate: removeAvatar, isPending: isRemovingAvatar } = useMutation({
+    mutationFn: () => organizationApi.update({ settings: { avatarUrl: '' } }),
+    onSuccess: () => {
+      setAvatarPreview(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      toast.success('Avatar removed');
+      queryClient.invalidateQueries({ queryKey: ['organization'] });
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data?.message ?? 'Failed to remove avatar');
     },
   });
 
@@ -142,9 +158,9 @@ export default function SettingsPage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <Bot className="h-8 w-8 text-primary" />
+                    <LogoIcon size={32} className="h-8 w-8" />
                   )}
-                  {(isUploading) && (
+                  {(isUploading || isRemovingAvatar) && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                       <Loader2 className="h-5 w-5 animate-spin text-white" />
                     </div>
@@ -163,10 +179,19 @@ export default function SettingsPage() {
                     type="button"
                     className="btn-secondary !py-2 !px-4 text-sm"
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
+                    disabled={isUploading || isRemovingAvatar}
                   >
                     <Upload className="h-4 w-4" />
                     {isUploading ? 'Uploading...' : 'Upload Avatar'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary !py-2 !px-4 text-sm mt-3"
+                    onClick={() => removeAvatar()}
+                    disabled={!avatarPreview || isUploading || isRemovingAvatar}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {isRemovingAvatar ? 'Removing...' : 'Remove Avatar'}
                   </button>
                   <p className="mt-2 text-xs text-text-secondary">JPG, PNG, WebP or GIF. Max 2 MB.</p>
                 </div>

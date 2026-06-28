@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bot, LayoutDashboard, FileText, Settings, LogOut, Menu, X, Code2, Shield, Users, Building2, Database, UserPlus, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, LogOut, Menu, X, Code2, Shield, Users, Building2, Database, UserPlus, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { LogoIcon } from '@/components/brand/Logo';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -39,8 +40,8 @@ export function Sidebar() {
     <div className="flex h-full flex-col bg-surface/50 backdrop-blur-xl border-r border-border">
       {/* Logo */}
       <div className="flex h-[72px] items-center gap-3 border-b border-border px-6">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20 border border-primary/30 shadow-glow-primary">
-          <Bot className="h-5 w-5 text-primary" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black/40 border border-primary/30 shadow-glow-primary overflow-hidden">
+          <LogoIcon size={40} className="h-10 w-10" />
         </div>
         <span className="font-logo text-xl font-bold tracking-tight text-text-primary">
           Chatbots<span className="text-primary">Hub</span>

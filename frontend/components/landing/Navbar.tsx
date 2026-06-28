@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Bot, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LogoIcon } from '@/components/brand/Logo';
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -27,8 +28,8 @@ export function Navbar() {
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-3 group" aria-label="ChatbotsHub home">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20 border border-primary/30 shadow-glow-primary transition-transform group-hover:scale-105">
-            <Bot className="h-5 w-5 text-primary" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black/40 border border-primary/30 shadow-glow-primary transition-transform group-hover:scale-105 overflow-hidden">
+            <LogoIcon size={40} className="h-10 w-10" />
           </div>
           <span className="font-logo text-xl font-bold tracking-tight text-text-primary">
             Chatbots<span className="text-primary">Hub</span>

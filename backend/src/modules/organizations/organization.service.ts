@@ -43,6 +43,10 @@ export class OrganizationService {
   ): Promise<IOrganization> {
     if (id !== requestingOrgId) throw new ForbiddenError();
 
+    const existingOrg = dto.settings?.avatarUrl !== undefined
+      ? await Organization.findById(id).select('settings.avatarUrl').lean()
+      : null;
+
     const updatePayload: Record<string, unknown> = {};
     if (dto.name) updatePayload.name = dto.name;
 
@@ -61,6 +65,15 @@ export class OrganizationService {
     );
 
     if (!org) throw new NotFoundError('Organization');
+
+    if (
+      dto.settings?.avatarUrl !== undefined
+      && dto.settings.avatarUrl.trim() === ''
+      && existingOrg?.settings?.avatarUrl?.trim()
+    ) {
+      await deleteCloudinaryImage(existingOrg.settings.avatarUrl).catch(() => undefined);
+    }
+
     return org;
   }
 

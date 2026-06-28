@@ -1,13 +1,13 @@
 import Link from 'next/link';
-import { Bot } from 'lucide-react';
+import { LogoIcon } from '@/components/brand/Logo';
 
 export function BlogNav() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-3 group" aria-label="ChatbotsHub home">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/20 border border-primary/30 shadow-glow-primary transition-transform group-hover:scale-105">
-            <Bot className="h-5 w-5 text-primary" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/40 border border-primary/30 shadow-glow-primary transition-transform group-hover:scale-105 overflow-hidden">
+            <LogoIcon size={36} className="h-9 w-9" />
           </div>
           <span className="font-logo text-lg font-bold tracking-tight text-text-primary">
             Chatbots<span className="text-primary">Hub</span>

@@ -8,10 +8,11 @@ import toast from 'react-hot-toast';
 import { AxiosError } from 'axios';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
-import { Loader2, Bot, Sparkles, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { AnimatedBackground } from '@/components/shared/AnimatedBackground';
+import { LogoIcon } from '@/components/brand/Logo';
 import { motion } from 'framer-motion';
 
 function slugify(value: string): string {
@@ -88,8 +89,8 @@ export default function RegisterPage() {
           transition={{ duration: 0.5 }}
           className="mb-8 flex flex-col items-center gap-4"
         >
-          <Link href="/" className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/20 border border-primary/30 shadow-glow-primary hover:scale-105 transition-transform">
-            <Bot className="h-8 w-8 text-primary" />
+          <Link href="/" className="flex h-16 w-16 items-center justify-center rounded-2xl bg-black/40 border border-primary/30 shadow-glow-primary hover:scale-105 transition-transform">
+            <LogoIcon size={48} className="h-12 w-12" />
           </Link>
           <div className="text-center">
             <h1 className="text-2xl font-bold tracking-tight text-text-primary">Create your workspace</h1>
