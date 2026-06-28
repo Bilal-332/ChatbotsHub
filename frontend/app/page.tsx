@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
+import Script from 'next/script';
 import { Navbar } from '@components/landing/Navbar';
 import { StaticBackground } from '@/components/shared/StaticBackground';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -57,6 +58,11 @@ export default function LandingPage() {
     <>
       <JsonLd />
       <StaticBackground />
+      <Script
+        src="https://chatbotshub.me/widget.js"
+        data-api-key="chk_fd4c6e91a5ee4319a9c0e1af421ea20c"
+        strategy="afterInteractive"
+      />
       <Navbar />
       <main>
         <HeroSection />
