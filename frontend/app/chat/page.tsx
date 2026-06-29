@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { resolveAvatarUrl, isRtlText } from '@/lib/utils';
 import type { SupportedLanguage } from '@/types/index';
 import { LeadForm, type LeadFormValues } from '@/components/chat/LeadForm';
+import { MarkdownMessage } from '@/components/chat/MarkdownMessage';
 
 interface Message {
   id: string;
@@ -21,13 +22,6 @@ interface ChatSettings {
   primaryColor: string;
   avatarUrl?: string | null;
   language?: SupportedLanguage;
-}
-
-function formatAssistantMessage(content: string): string[] {
-  return content
-    .split(/(?<=[.!?])\s+(?=[A-Z0-9\u0600-\u06FF])/)
-    .map((sentence) => sentence.trim())
-    .filter(Boolean);
 }
 
 function getMessageFontClass(content: string, language?: SupportedLanguage): string {
@@ -388,13 +382,7 @@ export default function ChatWidgetPage() {
                 dir={fontClass ? 'rtl' : 'ltr'}
               >
                 {msg.role === 'assistant' ? (
-                  <div className="space-y-2">
-                    {formatAssistantMessage(msg.content).map((sentence, index) => (
-                      <p key={`${msg.id}-${index}`} className="m-0">
-                        {sentence}
-                      </p>
-                    ))}
-                  </div>
+                  <MarkdownMessage content={msg.content} />
                 ) : (
                   msg.content
                 )}

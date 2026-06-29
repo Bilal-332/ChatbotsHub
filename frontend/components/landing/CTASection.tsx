@@ -57,7 +57,7 @@ export function CTASection() {
           </Link>
         </div>
 
-        <p className="mt-4 text-sm font-medium text-text-secondary/60">No credit card required · SOC2 Compliant · Free tier available</p>
+        <p className="mt-4 text-sm font-medium text-text-secondary/60">No credit card required · Free tier available</p>
       </div>
     </section>
   );

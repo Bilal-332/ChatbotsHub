@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AnimatedBackground } from '@/components/shared/AnimatedBackground';
@@ -9,13 +10,23 @@ import { PlanExpiryBanner } from '@/components/shared/PlanExpiryBanner';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { isAuthenticated, impersonation, stopImpersonation } = useAuthStore();
+  const { isAuthenticated, hasHydrated, impersonation, stopImpersonation } = useAuthStore();
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Only redirect once persisted auth has been read; otherwise a hard refresh
+    // would bounce authenticated users to login before tokens are restored.
+    if (hasHydrated && !isAuthenticated) {
       router.replace('/auth/login');
     }
-  }, [isAuthenticated, router]);
+  }, [hasHydrated, isAuthenticated, router]);
+
+  if (!hasHydrated) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return null;

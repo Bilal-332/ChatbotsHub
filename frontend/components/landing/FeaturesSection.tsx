@@ -24,7 +24,7 @@ const FEATURES = [
     feature: 'secure' as FeatureType,
     icon: ShieldCheck,
     title: 'Enterprise Security',
-    desc: 'Isolated knowledge bases ensure your data never leaks to other tenants. SOC2 compliant infrastructure.',
+    desc: 'Isolated knowledge bases ensure your data never leaks to other tenants. secured infrastructure.',
     colSpan: 'md:col-span-1 lg:col-span-2',
     rowSpan: 'row-span-1',
     height: 'min-h-[250px]',

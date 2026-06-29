@@ -14,11 +14,11 @@ import { AppError } from '@shared/errors';
 import { Document as DocumentModel } from '@modules/documents/document.model';
 import { Organization } from '@modules/organizations/organization.model';
 
-const MIN_RELEVANCE_SCORE = 0.2;
-const MIN_RERANK_SCORE = 0.35;
+const MIN_RELEVANCE_SCORE = 0.3;
+const MIN_RERANK_SCORE = 0.4;
 const RETRIEVAL_TOP_K = 8;
 const RERANK_TOP_N = 5;
-const MIN_CONFIDENCE_FOR_RAG = 0.28;
+const MIN_CONFIDENCE_FOR_RAG = 0.35;
 
 const NO_KNOWLEDGE_MESSAGE =
   'That\'s a great question. I don\'t know the answer yet, but if you tell me more, I\'ll do my best to help.';

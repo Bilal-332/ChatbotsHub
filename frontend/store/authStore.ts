@@ -7,12 +7,15 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
+  /** True once persisted auth has been read from localStorage on the client. */
+  hasHydrated: boolean;
   planExpiryWarning: PlanExpiryWarning | null;
   impersonation: {
     accessToken: string;
     refreshToken: string;
     organizationId: string;
   } | null;
+  setHasHydrated: (value: boolean) => void;
   setAuth: (user: User, accessToken: string, refreshToken: string, planExpiryWarning?: PlanExpiryWarning | null) => void;
   setPlanExpiryWarning: (warning: PlanExpiryWarning | null) => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
@@ -29,8 +32,11 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       refreshToken: null,
       isAuthenticated: false,
+      hasHydrated: false,
       planExpiryWarning: null,
       impersonation: null,
+
+      setHasHydrated: (hasHydrated) => set({ hasHydrated }),
 
       setAuth: (user, accessToken, refreshToken, planExpiryWarning = null) =>
         set({ user, accessToken, refreshToken, isAuthenticated: true, impersonation: null, planExpiryWarning }),
@@ -102,7 +108,12 @@ export const useAuthStore = create<AuthState>()(
       }),
       onRehydrateStorage: () => (state) => {
         // Never restore expiry warning from storage — dashboard derives it from org API
-        if (state) state.planExpiryWarning = null;
+        if (state) {
+          state.planExpiryWarning = null;
+          // Mark hydration complete so route guards don't redirect before
+          // persisted tokens are read back from localStorage on refresh.
+          state.setHasHydrated(true);
+        }
       },
     },
   ),
