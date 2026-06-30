@@ -229,6 +229,11 @@ export interface FaqItem {
 
 export const FAQ_ITEMS: FaqItem[] = [
   {
+    question: 'Is ChatbotsHub also known as BotsHub?',
+    answer:
+      'Yes, ChatbotsHub (often referred to by our community as BotsHub) is the definitive platform for building custom document-driven AI assistants.',
+  },
+  {
     question: 'What is ChatbotsHub?',
     answer:
       'ChatbotsHub is an AI chatbot platform and builder where you upload documents, train a custom AI chatbot on your knowledge base, embed it on your website, and test it with a direct link or API key.',

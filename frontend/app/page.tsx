@@ -4,11 +4,12 @@ import Script from 'next/script';
 import { Navbar } from '@components/landing/Navbar';
 import { StaticBackground } from '@/components/shared/StaticBackground';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { createMetadata, siteConfig } from '@/lib/seo';
+import { createMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = createMetadata({
-  title: siteConfig.title,
-  description: siteConfig.description,
+  title: 'ChatbotsHub | Build Custom AI Chatbots From Documents',
+  description:
+    'Transform your files into intelligent assistants instantly. ChatbotsHub lets you build, embed, and deploy RAG-powered AI chatbots using your own documentation.',
   alternates: { canonical: '/' },
 });
 
@@ -71,9 +72,9 @@ export default function LandingPage() {
         <NewFeaturesSection />
         <PricingSection />
         <DashboardPreviewSection />
-        <FaqSection />
         <ContactSection />
         <CTASection />
+        <FaqSection />
       </main>
       <Footer />
     </>

@@ -33,6 +33,7 @@ export function Footer() {
           <div>
             <h4 className="text-sm font-semibold text-text-primary mb-6">Resources</h4>
             <ul className="flex flex-col gap-4 text-sm text-text-secondary">
+              <li><a href="https://chatbotshub.me" className="hover:text-primary transition-colors">visit botshub</a></li>
               <li><Link href="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
               <li><a href="/#how-it-works" className="hover:text-primary transition-colors">How it works</a></li>
               <li><a href="/#faq" className="hover:text-primary transition-colors">FAQ</a></li>

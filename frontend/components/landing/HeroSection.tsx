@@ -46,8 +46,11 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mt-6 max-w-xl text-[1.25rem] leading-relaxed text-text-secondary"
           >
-            Transform your enterprise data into autonomous AI chatbots. Built for scale, security, and precision.
+            Transform your enterprise data into autonomous AI chatbots. ChatbotsHub, often searched as botshub,
+            is built for scale, security, and precision.
           </motion.p>
+
+         
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -72,6 +75,19 @@ export function HeroSection() {
           >
             Trusted by innovative teams worldwide. No credit card required.
           </motion.p>
+           <motion.figure
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+            className="mt-6 w-fit rounded-2xl border border-primary/20 bg-surface/40 p-3 backdrop-blur"
+          >
+            <img
+              src="/opengraph-image"
+              alt="botshub interface layout"
+              className="h-1 w-2 rounded-lg object-cover"
+              loading="lazy"
+            />
+          </motion.figure>
         </div>
 
         {/* ── Right: 3D Scene ─────────────────────────────── */}
