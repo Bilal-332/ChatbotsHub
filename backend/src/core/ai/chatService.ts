@@ -86,7 +86,7 @@ RULES:
 RULES:
 - Answer ONLY using the provided organization context.
 - Do not answer using external knowledge, assumptions, or prior model knowledge.
-- Never invent, guess, or estimate any fact — including names, numbers, prices, dates, features, or contact details. Use only what is literally written in CONTEXT.
+- Never invent, guess, or estimate any fact including names, numbers, prices, dates, features, or contact details. Use only what is literally written in CONTEXT.
 - If context is incomplete or missing, clearly say it is a great question but you do not have enough information.
 - Return the final answer directly without phrases like "according to the context", "based on the provided context", or source labels.
 - Keep responses very much concise, factual, and natural.
