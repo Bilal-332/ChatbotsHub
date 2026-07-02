@@ -21,7 +21,10 @@ const PAGE_DESCRIPTION =
 export const metadata: Metadata = createMetadata({
   title: PAGE_TITLE,
   description: PAGE_DESCRIPTION,
-  alternates: { canonical: '/blog' },
+  alternates: {
+    canonical: '/blog',
+    types: { 'application/rss+xml': '/feed.xml' },
+  },
   openGraph: {
     type: 'website',
     locale: siteConfig.locale,

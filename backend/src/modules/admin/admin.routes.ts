@@ -7,6 +7,12 @@ import { PLAN_NAMES } from '@modules/plans/plan.constants';
 
 const router = Router();
 
+/** Accepts a paid-plan duration: an integer number of months (1-120) or 'lifetime'. */
+function isValidPlanDuration(value: unknown): boolean {
+	if (value === 'lifetime') return true;
+	return Number.isInteger(value) && (value as number) >= 1 && (value as number) <= 120;
+}
+
 router.use(authenticate, requireRole('super_admin'));
 
 router.get(
@@ -31,6 +37,10 @@ router.post(
 			.matches(/^[a-z0-9-]+$/),
 		body('plan').optional().isIn(PLAN_NAMES),
 		body('isActive').optional().isBoolean(),
+		body('duration')
+			.optional()
+			.custom(isValidPlanDuration)
+			.withMessage('duration must be an integer 1-120 or "lifetime"'),
 		validateRequest,
 	],
 	adminController.createOrganization.bind(adminController),
@@ -50,6 +60,10 @@ router.patch(
 			.matches(/^[a-z0-9-]+$/),
 		body('plan').optional().isIn(PLAN_NAMES),
 		body('isActive').optional().isBoolean(),
+		body('duration')
+			.optional()
+			.custom(isValidPlanDuration)
+			.withMessage('duration must be an integer 1-120 or "lifetime"'),
 		validateRequest,
 	],
 	adminController.updateOrganization.bind(adminController),

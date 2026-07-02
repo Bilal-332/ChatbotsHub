@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { organizationApi, documentApi } from '@/lib/api';
-import { FileText, MessageSquare, Zap, TrendingUp, Search } from 'lucide-react';
+import { FileText, MessageSquare, Zap, TrendingUp, Search, CalendarClock } from 'lucide-react';
 import type { OrgStats, Paginated, Document } from '@/types/index';
 import { PLAN_DISPLAY } from '@/lib/constants';
 import { GlassCard } from '@/components/shared/GlassCard';
@@ -101,6 +101,24 @@ export default function DashboardPage() {
   const plan = statsData?.plan ?? 'free';
   const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS['free'];
 
+  const isPaidPlan = plan === 'starter' || plan === 'pro';
+  const expiresAt = orgData?.planExpiresAt ?? null;
+  const daysLeft = expiresAt
+    ? Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 86400000))
+    : null;
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+  const expiry = isPaidPlan
+    ? expiresAt
+      ? {
+          label: `Plan expires ${formatDate(expiresAt)}`,
+          hint: `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`,
+          urgent: (daysLeft ?? 0) <= 7,
+        }
+      : { label: 'Lifetime plan', hint: 'Never expires', urgent: false }
+    : { label: 'Free plan', hint: 'No expiry date', urgent: false };
+
   return (
     <div className="space-y-8 max-w-6xl">
       {/* Header */}
@@ -120,6 +138,18 @@ export default function DashboardPage() {
           <p className="text-base text-text-secondary">
             Here's what's happening with your AI knowledge base today.
           </p>
+          <div
+            className={`mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold ${
+              expiry.urgent
+                ? 'border-status-warning/30 bg-status-warning/10 text-status-warning'
+                : 'border-border bg-surface/60 text-text-secondary'
+            }`}
+          >
+            <CalendarClock className="h-3.5 w-3.5" />
+            <span>{expiry.label}</span>
+            <span className="text-text-secondary/60">•</span>
+            <span className="font-medium">{expiry.hint}</span>
+          </div>
         </div>
         <Link href="/dashboard/documents" className="btn-primary !px-5 !py-2.5 text-sm whitespace-nowrap self-start md:self-auto">
   + New Knowledge

@@ -28,7 +28,11 @@ const suezOne = Suez_One({
   preload: true,
 });
 
-export const metadata: Metadata = createMetadata();
+export const metadata: Metadata = createMetadata({
+  alternates: {
+    types: { 'application/rss+xml': '/feed.xml' },
+  },
+});
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

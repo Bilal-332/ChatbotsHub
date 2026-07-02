@@ -3,7 +3,10 @@ import type { PlanName } from '@shared/types';
 import { logger } from '@shared/logger';
 
 const PAID_PLANS: PlanName[] = ['starter', 'pro'];
-const PLAN_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+const PLAN_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days = 1 month
+
+/** Duration for a paid plan: number of months, or 'lifetime' (never expires). */
+export type PlanDuration = number | 'lifetime';
 
 export interface PlanExpiryWarning {
   expiredPlan: PlanName;
@@ -15,8 +18,9 @@ export function isPaidPlan(plan: PlanName): boolean {
   return PAID_PLANS.includes(plan);
 }
 
-export function getPlanExpiryDate(from: Date = new Date()): Date {
-  return new Date(from.getTime() + PLAN_DURATION_MS);
+export function getPlanExpiryDate(from: Date = new Date(), months = 1): Date {
+  const safeMonths = Number.isFinite(months) && months > 0 ? months : 1;
+  return new Date(from.getTime() + PLAN_DURATION_MS * safeMonths);
 }
 
 /**
@@ -64,6 +68,9 @@ export async function checkAndApplyPlanExpiry(
       expiredPlan,
       planExpiresAt: null,
       planExpiredAt: org.planExpiresAt,
+      // Start the new (free) period with a fresh usage window.
+      monthlyQueryCount: 0,
+      queryResetAt: now,
     });
 
     logger.info(`Plan expired for org ${organizationId}: ${expiredPlan} → free`);
@@ -84,27 +91,61 @@ function buildExpiryWarning(expiredPlan: PlanName, expiredAt: Date): PlanExpiryW
 }
 
 /**
- * Apply paid plan with 30-day expiry. Clears previous expiry warning.
+ * Apply a paid plan and clear any previous expiry warning.
+ *
+ * - Free plan: clears all expiry markers.
+ * - `duration = 'lifetime'`: paid plan with no expiry date (never lapses).
+ * - `duration = N` months: extends from the later of the current active expiry
+ *   and now, so renewing before expiry adds to remaining time (L5) instead of
+ *   overwriting it.
  */
 export async function assignPaidPlan(
   organizationId: string,
   plan: PlanName,
+  duration: PlanDuration = 1,
 ): Promise<void> {
+  const now = new Date();
+  // Assigning/renewing a plan starts a new billing period, so the monthly
+  // usage counter must reset instead of carrying over the previous period.
+  const resetUsage = { monthlyQueryCount: 0, queryResetAt: now };
+
   if (!isPaidPlan(plan)) {
     await Organization.findByIdAndUpdate(organizationId, {
       plan,
       planExpiresAt: null,
       expiredPlan: null,
       planExpiredAt: null,
+      ...resetUsage,
     });
     return;
   }
 
+  if (duration === 'lifetime') {
+    await Organization.findByIdAndUpdate(organizationId, {
+      plan,
+      planExpiresAt: null, // lifetime: never expires
+      expiredPlan: null,
+      planExpiredAt: null,
+      ...resetUsage,
+    });
+    return;
+  }
+
+  // L5: extend from remaining time when the current paid plan is still active.
+  const current = await Organization.findById(organizationId)
+    .select('plan planExpiresAt')
+    .lean();
+  const base =
+    current && isPaidPlan(current.plan) && current.planExpiresAt && current.planExpiresAt > now
+      ? new Date(current.planExpiresAt)
+      : now;
+
   await Organization.findByIdAndUpdate(organizationId, {
     plan,
-    planExpiresAt: getPlanExpiryDate(),
+    planExpiresAt: getPlanExpiryDate(base, duration),
     expiredPlan: null,
     planExpiredAt: null,
+    ...resetUsage,
   });
 }
 
@@ -125,6 +166,9 @@ export async function processAllExpiredPlans(): Promise<number> {
       expiredPlan: org.plan,
       planExpiresAt: null,
       planExpiredAt: org.planExpiresAt ?? now,
+      // Start the new (free) period with a fresh usage window.
+      monthlyQueryCount: 0,
+      queryResetAt: now,
     });
     count += 1;
   }

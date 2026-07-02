@@ -24,6 +24,25 @@ export const siteConfig = {
     'chatbot for website',
     'ChatbotsHub',
     'chatbotshub',
+    'botshub',
+    'chatbots hub',
+    'chatbot hub',
+    'Chatbot hub',
+    'AI chatbot',
+    'ai chatbot trained on documents',
+    'ai chatbot trained on pdf',
+    'ai chatbot trained on docx',
+    'ai chatbot trained on txt',
+    'ai chatbot trained on any document',
+    'ai chatbot trained on website url', 'ai chatbot trained on website',
+    'AI chatbot platform',
+    'AI chatbot builder',
+    'AI chatbot software',
+    'AI chatbot for website',
+    'AI chatbot for business',
+    'AI chatbot for document',
+    'AI chatbot for training',
+    'AI chatbot for embedding',
     'document chatbot',
     'train chatbot on documents',
     'embeddable chatbot',
@@ -130,10 +149,15 @@ export function getOrganizationJsonLd() {
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer support',
-      email: 'bilalkhan.fullstack@gmail.com',
+      email: 'support@chatbotshub.me',
       availableLanguage: ['English', 'Arabic', 'Urdu'],
     },
-    sameAs: [] as string[],
+    // Public profiles strengthen entity/E-E-A-T signals. Add more (LinkedIn,
+    // GitHub, YouTube) here as those accounts are created.
+    sameAs: [
+      'https://x.com/chatbotshub',
+      'https://twitter.com/chatbotshub',
+    ] as string[],
   };
 }
 
@@ -270,11 +294,11 @@ export const FAQ_ITEMS: FaqItem[] = [
  * IMPORTANT (Google policy): FAQ rich results require the same FAQ Q&A to be
  * visibly present on the page — which they are, via FaqSection.tsx.
  */
-export function getFaqJsonLd() {
+export function getFaqJsonLd(items: FaqItem[] = FAQ_ITEMS) {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: FAQ_ITEMS.map((item) => ({
+    mainEntity: items.map((item) => ({
       '@type': 'Question',
       name: item.question,
       acceptedAnswer: {

@@ -81,10 +81,10 @@ export function FeaturesSection() {
               }}
               className={`flex flex-col overflow-hidden p-0 ${item.colSpan} ${item.rowSpan} ${item.height}`}
             >
-              {/* Scene Area */}
-              <div className="relative flex-1 bg-surface/30 min-h-[150px] flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-card/90 z-10" />
-                <div className="w-full h-full opacity-60 mix-blend-screen">
+              {/* Scene Area — dark radial backdrop makes the neon meshes pop */}
+              <div className="relative flex-1 min-h-[150px] flex items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_35%,rgba(23,31,74,0.35),rgba(2,4,12,0.95))]">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-card/60 z-10" />
+                <div className="w-full h-full opacity-100">
                   <FeatureScene feature={item.feature} />
                 </div>
               </div>

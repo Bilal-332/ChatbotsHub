@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 interface BlogImageProps {
@@ -10,11 +11,13 @@ interface BlogImageProps {
   width?: number;
   height?: number;
   priority?: boolean;
+  sizes?: string;
 }
 
 /**
- * Renders the primary cover photo and transparently swaps to the generated
- * branded OG cover (fallbackSrc) if the primary URL fails to load.
+ * Optimized cover image (AVIF/WebP, responsive srcset via next/image) that
+ * transparently swaps to the generated branded OG cover (fallbackSrc) if the
+ * primary URL fails to load. Explicit width/height reserve space to avoid CLS.
  */
 export function BlogImage({
   src,
@@ -24,8 +27,12 @@ export function BlogImage({
   width = 1200,
   height = 630,
   priority = false,
+  sizes = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px',
 }: BlogImageProps) {
   const [currentSrc, setCurrentSrc] = useState(src);
+  // The dynamic OG fallback is same-origin and already sized, so skip the
+  // optimizer for it to guarantee it always renders.
+  const isFallback = currentSrc === fallbackSrc;
 
   // Reset when the post (src) changes, e.g. on client navigation between posts.
   useEffect(() => {
@@ -33,14 +40,14 @@ export function BlogImage({
   }, [src]);
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <Image
       src={currentSrc}
       alt={alt}
       width={width}
       height={height}
-      loading={priority ? 'eager' : 'lazy'}
-      decoding="async"
+      priority={priority}
+      sizes={sizes}
+      unoptimized={isFallback}
       onError={() => {
         if (currentSrc !== fallbackSrc) setCurrentSrc(fallbackSrc);
       }}

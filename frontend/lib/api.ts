@@ -184,6 +184,7 @@ export const adminApi = {
     slug: string;
     plan?: AdminOrganization['plan'];
     isActive?: boolean;
+    duration?: number | 'lifetime';
   }) => apiClient.post<ApiSuccess<AdminOrganization>>('/admin/organizations', payload),
 
   updateOrganization: (id: string, payload: Partial<{
@@ -191,6 +192,7 @@ export const adminApi = {
     slug: string;
     plan: AdminOrganization['plan'];
     isActive: boolean;
+    duration: number | 'lifetime';
   }>) => apiClient.patch<ApiSuccess<AdminOrganization>>(`/admin/organizations/${id}`, payload),
 
   deleteOrganization: (id: string) =>

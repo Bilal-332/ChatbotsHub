@@ -69,10 +69,10 @@ export function HowItWorksSection() {
               }}
               className="relative flex flex-col overflow-hidden p-0"
             >
-              {/* 3D Scene area */}
-              <div className="flex h-56 items-center justify-center bg-surface/30 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-card/90 z-10" />
-                <div className="w-full h-full opacity-70 mix-blend-screen">
+              {/* 3D Scene area — dark radial backdrop makes the neon meshes pop */}
+              <div className="flex h-56 items-center justify-center relative overflow-hidden bg-[radial-gradient(circle_at_50%_35%,rgba(23,31,74,0.35),rgba(2,4,12,0.95))]">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-card/60 z-10" />
+                <div className="w-full h-full opacity-100">
                   <StepScene step={step} />
                 </div>
               </div>

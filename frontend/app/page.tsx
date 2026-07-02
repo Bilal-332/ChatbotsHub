@@ -10,7 +10,10 @@ export const metadata: Metadata = createMetadata({
   title: 'ChatbotsHub | Build Custom AI Chatbots From Documents',
   description:
     'Transform your files into intelligent assistants instantly. ChatbotsHub lets you build, embed, and deploy RAG-powered AI chatbots using your own documentation.',
-  alternates: { canonical: '/' },
+  alternates: {
+    canonical: '/',
+    types: { 'application/rss+xml': '/feed.xml' },
+  },
 });
 
 const HeroSection = dynamic(

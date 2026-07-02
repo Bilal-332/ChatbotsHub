@@ -5,7 +5,7 @@ import { paginate, type PaginatedData } from '@shared/apiResponse';
 import { ConflictError, NotFoundError } from '@shared/errors';
 import { deleteOrganizationVectors } from '@core/vector/qdrantClient';
 import type { UserRole } from '@shared/types';
-import { assignPaidPlan } from '@modules/plans/plan.service';
+import { assignPaidPlan, type PlanDuration } from '@modules/plans/plan.service';
 
 export interface ListQuery {
 	page: number;
@@ -23,6 +23,8 @@ export interface CreateOrganizationDto {
 	slug: string;
 	plan?: IOrganization['plan'];
 	isActive?: boolean;
+	/** Paid-plan duration in months, or 'lifetime'. Defaults to 1 month. */
+	duration?: PlanDuration;
 }
 
 export interface UpdateOrganizationDto {
@@ -30,6 +32,8 @@ export interface UpdateOrganizationDto {
 	slug?: string;
 	plan?: IOrganization['plan'];
 	isActive?: boolean;
+	/** Paid-plan duration in months, or 'lifetime'. Only applied when set. */
+	duration?: PlanDuration;
 }
 
 export interface CreateUserDto {
@@ -98,7 +102,7 @@ export class AdminService {
 		});
 
 		if (dto.plan) {
-			await assignPaidPlan(org._id.toString(), dto.plan);
+			await assignPaidPlan(org._id.toString(), dto.plan, dto.duration ?? 1);
 		}
 
 		return (await Organization.findById(org._id)) as IOrganization;
@@ -115,9 +119,19 @@ export class AdminService {
 		if (dto.slug) updateFields.slug = dto.slug;
 		if (typeof dto.isActive === 'boolean') updateFields.isActive = dto.isActive;
 
-		// Handle plan changes with expiry logic separately
+		// L1: only (re)assign the plan when the plan actually changes or an explicit
+		// duration is provided. Editing unrelated fields (name/slug/status) must not
+		// silently renew a subscription.
 		if (dto.plan) {
-			await assignPaidPlan(id, dto.plan);
+			const current = await Organization.findById(id).select('plan').lean();
+			if (!current) throw new NotFoundError('Organization');
+
+			const planChanged = dto.plan !== current.plan;
+			const durationProvided = dto.duration !== undefined;
+
+			if (planChanged || durationProvided) {
+				await assignPaidPlan(id, dto.plan, dto.duration ?? 1);
+			}
 		}
 
 		const org = await Organization.findByIdAndUpdate(

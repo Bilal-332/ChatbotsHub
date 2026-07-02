@@ -6,8 +6,8 @@ export function Footer() {
   return (
     <footer className="border-t border-border bg-background py-16 relative z-10">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-          <div className="md:col-span-1">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-12">
+          <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-3 mb-6" aria-label="ChatbotsHub home">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black/40 border border-primary/30 shadow-glow-primary overflow-hidden">
                 <LogoIcon size={40} className="h-10 w-10" />
@@ -27,6 +27,17 @@ export function Footer() {
               <li><a href="/#features" className="hover:text-primary transition-colors">Features</a></li>
               <li><a href="/#pricing" className="hover:text-primary transition-colors">Pricing</a></li>
               <li><a href="/#contact" className="hover:text-primary transition-colors">Contact</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold text-text-primary mb-6">Solutions</h4>
+            <ul className="flex flex-col gap-4 text-sm text-text-secondary">
+              <li><Link href="/chatbot-for/wordpress" className="hover:text-primary transition-colors">Chatbot for WordPress</Link></li>
+              <li><Link href="/chatbot-for/shopify" className="hover:text-primary transition-colors">Chatbot for Shopify</Link></li>
+              <li><Link href="/chatbot-for/ecommerce" className="hover:text-primary transition-colors">Chatbot for Ecommerce</Link></li>
+              <li><Link href="/chatbot-for/real-estate" className="hover:text-primary transition-colors">Chatbot for Real Estate</Link></li>
+              <li><Link href="/chatbot-for" className="hover:text-primary transition-colors">All solutions</Link></li>
             </ul>
           </div>
 

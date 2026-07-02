@@ -155,7 +155,8 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
               fallbackSrc={getPostCoverPath(post.slug)}
               alt={post.coverAlt}
               priority
-              className="aspect-[1200/630] w-full object-cover"
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="aspect-[1200/630] h-auto w-full object-cover"
             />
           </div>
 

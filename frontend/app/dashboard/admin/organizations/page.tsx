@@ -15,6 +15,25 @@ import { Building2, Plus, Search, Loader2, Trash2, Pencil, LogIn, BadgeCheck } f
 
 const PLAN_OPTIONS = ['free', 'starter', 'pro'] as const;
 
+const DURATION_OPTIONS = [
+  { value: '1', label: '1 month' },
+  { value: '2', label: '2 months' },
+  { value: '3', label: '3 months' },
+  { value: '4', label: '4 months' },
+  { value: '5', label: '5 months' },
+  { value: '6', label: '6 months' },
+  { value: '12', label: '12 months' },
+  { value: '24', label: '24 months' },
+  { value: 'lifetime', label: 'Lifetime' },
+] as const;
+
+function parseDuration(value: string): number | 'lifetime' | undefined {
+  if (!value) return undefined;
+  if (value === 'lifetime') return 'lifetime';
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
 function slugify(value: string): string {
   return value
     .toLowerCase()
@@ -38,6 +57,9 @@ export default function AdminOrganizationsPage() {
     slug: '',
     plan: 'free',
     isActive: true,
+    // Paid-plan duration. Empty = leave the current expiry untouched (edit) or
+    // use the default 1-month window (create).
+    duration: '',
   });
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
@@ -49,12 +71,16 @@ export default function AdminOrganizationsPage() {
   });
 
   const { mutate: createOrg, isPending: isCreating } = useMutation({
-    mutationFn: () => adminApi.createOrganization({
-      name: formData.name,
-      slug: formData.slug,
-      plan: formData.plan as AdminOrganization['plan'],
-      isActive: formData.isActive,
-    }),
+    mutationFn: () => {
+      const duration = formData.plan !== 'free' ? parseDuration(formData.duration) : undefined;
+      return adminApi.createOrganization({
+        name: formData.name,
+        slug: formData.slug,
+        plan: formData.plan as AdminOrganization['plan'],
+        isActive: formData.isActive,
+        ...(duration !== undefined && { duration }),
+      });
+    },
     onSuccess: () => {
       toast.success('Organization created');
       queryClient.invalidateQueries({ queryKey: ['admin-organizations'] });
@@ -66,13 +92,16 @@ export default function AdminOrganizationsPage() {
   });
 
   const { mutate: updateOrg, isPending: isUpdating } = useMutation({
-    mutationFn: () =>
-      adminApi.updateOrganization(editingOrg?._id ?? '', {
+    mutationFn: () => {
+      const duration = formData.plan !== 'free' ? parseDuration(formData.duration) : undefined;
+      return adminApi.updateOrganization(editingOrg?._id ?? '', {
         name: formData.name,
         slug: formData.slug,
         plan: formData.plan as AdminOrganization['plan'],
         isActive: formData.isActive,
-      }),
+        ...(duration !== undefined && { duration }),
+      });
+    },
     onSuccess: () => {
       toast.success('Organization updated');
       queryClient.invalidateQueries({ queryKey: ['admin-organizations'] });
@@ -113,7 +142,7 @@ export default function AdminOrganizationsPage() {
   });
 
   const resetForm = () => {
-    setFormData({ name: '', slug: '', plan: 'free', isActive: true });
+    setFormData({ name: '', slug: '', plan: 'free', isActive: true, duration: '' });
     setSlugManuallyEdited(false);
   };
 
@@ -129,6 +158,7 @@ export default function AdminOrganizationsPage() {
       slug: org.slug,
       plan: org.plan,
       isActive: org.isActive,
+      duration: '',
     });
     setEditingOrg(org);
     setShowModal(true);
@@ -352,6 +382,33 @@ export default function AdminOrganizationsPage() {
                   </select>
                 </div>
               </div>
+
+              {formData.plan !== 'free' && (
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-text-primary">
+                    Paid plan duration
+                  </label>
+                  <select
+                    className="input"
+                    value={formData.duration}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, duration: e.target.value }))}
+                  >
+                    <option value="">
+                      {editingOrg ? 'Keep current expiry' : '1 month (default)'}
+                    </option>
+                    {DURATION_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1.5 text-xs text-text-secondary">
+                    Set this to the number of months paid for. Renewing before expiry adds to the
+                    remaining time. Choose <span className="font-medium">Lifetime</span> for a
+                    non-expiring plan.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex items-center justify-end gap-3 border-t border-border pt-6">

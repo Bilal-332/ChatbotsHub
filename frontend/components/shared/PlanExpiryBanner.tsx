@@ -38,7 +38,7 @@ export function PlanExpiryBanner() {
           </div>
         </div>
         <Link
-          href={`mailto:${CONTACT_INFO.email}?subject=Plan%20Renewal%20-%20ChatbotsHub`}
+          href={CONTACT_INFO.whatsappLink}
           className="btn-secondary !px-4 !py-2 shrink-0 text-xs sm:text-sm"
         >
           Contact to Renew
