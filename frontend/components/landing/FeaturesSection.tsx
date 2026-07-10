@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { BrainCircuit, Zap, BarChart2, ShieldCheck, Database, LayoutGrid } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
 import type { FeatureType } from '@/components/scenes/FeatureScene';
+import { LazyScene } from '@/components/scenes/LazyScene';
 
 const FeatureScene = dynamic(() => import('@/components/scenes/FeatureScene'), {
   ssr: false,
@@ -84,9 +85,9 @@ export function FeaturesSection() {
               {/* Scene Area — dark radial backdrop makes the neon meshes pop */}
               <div className="relative flex-1 min-h-[150px] flex items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_35%,rgba(23,31,74,0.35),rgba(2,4,12,0.95))]">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-card/60 z-10" />
-                <div className="w-full h-full opacity-100">
+                <LazyScene className="w-full h-full opacity-100">
                   <FeatureScene feature={item.feature} />
-                </div>
+                </LazyScene>
               </div>
 
               {/* Content Area */}

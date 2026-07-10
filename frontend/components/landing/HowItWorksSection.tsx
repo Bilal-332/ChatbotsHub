@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { Upload, Cpu, Globe } from 'lucide-react';
 import type { StepNumber } from '@/components/scenes/StepScene';
 import { GlassCard } from '@/components/shared/GlassCard';
+import { LazyScene } from '@/components/scenes/LazyScene';
 
 const StepScene = dynamic(() => import('@/components/scenes/StepScene'), {
   ssr: false,
@@ -72,9 +73,9 @@ export function HowItWorksSection() {
               {/* 3D Scene area — dark radial backdrop makes the neon meshes pop */}
               <div className="flex h-56 items-center justify-center relative overflow-hidden bg-[radial-gradient(circle_at_50%_35%,rgba(23,31,74,0.35),rgba(2,4,12,0.95))]">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-card/60 z-10" />
-                <div className="w-full h-full opacity-100">
+                <LazyScene className="w-full h-full opacity-100">
                   <StepScene step={step} />
-                </div>
+                </LazyScene>
               </div>
 
               {/* Content */}
