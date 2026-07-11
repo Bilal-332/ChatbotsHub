@@ -167,6 +167,7 @@ export function getWebSiteJsonLd() {
     '@type': 'WebSite',
     '@id': `${siteConfig.url}/#website`,
     name: siteConfig.name,
+    alternateName: ['AI Chatbot Hub', 'BotsHub' , 'ChatbotsHub' , 'Chatbot Hub', 'Chatbotshub' , 'botshub' , 'chatbots hub' , 'chatbot hub' , 'Chatbot hub' , 'AI chatbot' , 'ai chatbot trained on documents' , 'ai chatbot trained on pdf' , 'ai chatbot trained on docx' , 'ai chatbot trained on txt' , 'ai chatbot trained on any document' , 'ai chatbot trained on website url' , 'ai chatbot trained on website' , 'AI chatbot platform' , 'AI chatbot builder' , 'AI chatbot software' , 'AI chatbot for website' , 'AI chatbot for business' , 'AI chatbot for document' , 'AI chatbot for training' , 'AI chatbot for embedding' , 'document chatbot' , 'train chatbot on documents' , 'embeddable chatbot' , 'RAG chatbot' , 'knowledge base chatbot' , 'multilingual chatbot' , 'chatbot API' ],
     url: siteConfig.url,
     description: siteConfig.description,
     publisher: { '@id': `${siteConfig.url}/#organization` },

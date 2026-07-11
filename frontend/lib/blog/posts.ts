@@ -705,14 +705,16 @@ export const BLOG_POSTS: BlogPost[] = [
       'Paste a URL and let ChatbotsHub crawl, clean, and index your website into a chatbot — no copy-paste, no uploads.',
     category: 'Features',
     keywords: [
+      'ai chatbot trained on website url',
       'train chatbot from website',
+      'train AI chatbot on URL',
       'website chatbot',
       'crawl website chatbot',
       'AI chatbot platform',
     ],
     author: AUTHOR,
     publishedAt: '2026-05-12',
-    updatedAt: '2026-05-12',
+    updatedAt: '2026-07-11',
     readingMinutes: 7,
     coverAlt: 'A website being crawled and turned into an AI chatbot knowledge base',
     content: [
@@ -781,6 +783,22 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: 'p',
         text: 'Use website training when your knowledge already lives online and changes often. Use [document upload](/blog/how-to-train-a-chatbot-on-your-documents) for PDFs, contracts, and internal files that aren’t published on the web. Most teams use both together.',
+      },
+      { type: 'h2', text: 'FAQ: getting an AI chatbot trained on a website URL' },
+      { type: 'h3', text: 'Can I get an AI chatbot trained on a website URL?' },
+      {
+        type: 'p',
+        text: 'Yes. ChatbotsHub lets you get an AI chatbot trained on a website URL in minutes: paste your domain into the Knowledge Sources tab, and the crawler reads, cleans, and indexes your public pages automatically. There is no copy-pasting and no manual export.',
+      },
+      { type: 'h3', text: 'How long does it take to train a chatbot from a URL?' },
+      {
+        type: 'p',
+        text: 'Most sites finish crawling and indexing within a few minutes. Larger sites take longer because more pages are fetched and embedded, but training runs in the background so you can keep working. See our related guide on [AI chatbot pricing](/blog/ai-chatbot-pricing-guide) for per-plan crawl limits.',
+      },
+      { type: 'h3', text: 'Does the chatbot stay in sync when my website changes?' },
+      {
+        type: 'p',
+        text: 'Re-crawl your website URL after major content updates and the chatbot re-indexes the new pages. Keeping your source pages current is the easiest way to keep answers accurate.',
       },
       {
         type: 'cta',
@@ -885,27 +903,34 @@ export const BLOG_POSTS: BlogPost[] = [
     slug: 'chatbot-analytics-dashboard',
     coverImage:
       'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
-    title: 'Chatbot Analytics: Measure Conversations, Engagement & Conversions',
+    title: 'Chatbot Analytics Dashboard: Track Engagement & Conversions',
     description:
-      'Measure your AI chatbot with a built-in analytics dashboard. Track conversations, engagement, answered vs unanswered queries, top questions, and lead conversion.',
+      'A chatbot analytics dashboard that tracks conversations, engagement, answered vs unanswered queries, top questions, and lead conversion — all in one place.',
     excerpt:
-      'You can’t improve what you don’t measure. The analytics dashboard shows exactly how your chatbot performs.',
+      'You can’t improve what you don’t measure. The chatbot analytics dashboard shows exactly how your chatbot performs.',
     category: 'Features',
     keywords: [
+      'chatbot analytics dashboard',
       'chatbot analytics',
       'chatbot dashboard',
       'conversation analytics',
+      'chatbot reporting',
       'AI chatbot platform',
     ],
     author: AUTHOR,
     publishedAt: '2026-06-09',
-    updatedAt: '2026-06-09',
+    updatedAt: '2026-07-11',
     readingMinutes: 8,
     coverAlt: 'An analytics dashboard showing chatbot conversations and conversion charts',
     content: [
       {
         type: 'p',
-        text: 'A chatbot that you can’t measure is a black box. The **analytics dashboard** in ChatbotsHub gives you clear visibility into how visitors use your chatbot, how well it answers, and how many conversations turn into leads — all in one place.',
+        text: 'A chatbot that you can’t measure is a black box. The **chatbot analytics dashboard** in ChatbotsHub gives you clear visibility into how visitors use your chatbot, how well it answers, and how many conversations turn into leads — all in one place.',
+      },
+      { type: 'h2', text: 'What is a chatbot analytics dashboard?' },
+      {
+        type: 'p',
+        text: 'A chatbot analytics dashboard is a single view that reports how your AI chatbot performs: conversation volume, engagement depth, answered vs unanswered questions, top queries, and lead conversion. Instead of guessing, you get the numbers you need to improve answers and prove ROI.',
       },
       { type: 'h2', text: 'Overview: the metrics that matter' },
       {
@@ -959,11 +984,126 @@ export const BLOG_POSTS: BlogPost[] = [
         type: 'p',
         text: 'Use analytics as a weekly habit: check unanswered queries, add missing knowledge, watch your answer rate climb, and track how conversions improve. Combined with [lead capture](/blog/ai-chatbot-lead-capture), you get a complete picture from first message to closed lead.',
       },
+      { type: 'h2', text: 'Chatbot analytics dashboard FAQ' },
+      { type: 'h3', text: 'What metrics should a chatbot analytics dashboard track?' },
+      {
+        type: 'p',
+        text: 'At minimum, a chatbot analytics dashboard should track total conversations, unique visitors, messages per session, answered vs unanswered queries, top questions, and leads generated. Together these show reach, engagement, answer quality, and business impact.',
+      },
+      { type: 'h3', text: 'How do I use a chatbot analytics dashboard to improve answers?' },
+      {
+        type: 'p',
+        text: 'Watch the unanswered-questions view. Each unanswered query is a knowledge gap — close it by [training on documents](/blog/how-to-train-a-chatbot-on-your-documents) or [crawling a website URL](/blog/train-chatbot-from-website-url), then confirm your answer rate rises in the dashboard.',
+      },
       {
         type: 'cta',
         label: 'See your chatbot analytics',
         href: '/auth/register',
         text: 'Measure, improve, and convert more.',
+      },
+    ],
+  },
+  {
+    slug: 'what-is-an-ai-chatbot-hub',
+    coverImage:
+      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+    title: 'What Is an AI Chatbot Hub? A Complete Guide',
+    description:
+      'An AI Chatbot Hub is one platform to build, train, deploy, and measure AI chatbots. Learn what an AI chatbot hub does and how to launch your first bot in minutes.',
+    excerpt:
+      'An AI Chatbot Hub brings building, training, embedding, and analytics into one place. Here’s what that means and why it matters.',
+    category: 'Guides',
+    keywords: [
+      'AI Chatbot Hub',
+      'ai chatbot hub',
+      'chatbot hub',
+      'AI chatbot platform',
+      'AI chatbot builder',
+      'ChatbotsHub',
+    ],
+    author: AUTHOR,
+    publishedAt: '2026-07-11',
+    updatedAt: '2026-07-11',
+    readingMinutes: 7,
+    coverAlt: 'A central AI chatbot hub connecting knowledge sources, channels, and analytics',
+    content: [
+      {
+        type: 'p',
+        text: 'An **AI Chatbot Hub** is a single platform where you build, train, deploy, and measure AI chatbots — instead of stitching together separate tools for content ingestion, retrieval, hosting, and analytics. If you have ever juggled one service for embeddings, another for hosting, and a third for reporting, a hub is the alternative: everything your chatbot needs, in one place.',
+      },
+      {
+        type: 'p',
+        text: 'That is exactly what [ChatbotsHub — the AI Chatbot Hub](/) is built to be. This guide explains what an AI chatbot hub actually does, who it is for, and how to launch your first bot without gluing five products together.',
+      },
+      { type: 'h2', text: 'What does an AI Chatbot Hub do?' },
+      {
+        type: 'p',
+        text: 'A true AI chatbot hub covers the full lifecycle of a chatbot. Rather than being a single narrow feature, it connects the pieces that a production chatbot depends on:',
+      },
+      {
+        type: 'ul',
+        items: [
+          '**Ingest knowledge** — upload documents or [train from a website URL](/blog/train-chatbot-from-website-url) so the bot answers from your real content.',
+          '**Train and index** — chunking, embeddings, and vector search are handled for you, no ML plumbing required.',
+          '**Deploy anywhere** — get an embeddable script, an API key, and a shareable testing link for the same bot.',
+          '**Measure and improve** — a built-in [chatbot analytics dashboard](/blog/chatbot-analytics-dashboard) shows what works and where the knowledge gaps are.',
+        ],
+      },
+      { type: 'h2', text: 'Why use an AI Chatbot Hub instead of separate tools?' },
+      {
+        type: 'p',
+        text: 'Separate tools mean separate bills, separate dashboards, and brittle integrations that break when one vendor changes an API. An AI chatbot hub removes that overhead so you can focus on the answers your customers need — not the pipeline behind them.',
+      },
+      {
+        type: 'ul',
+        items: [
+          '**One workflow** from raw content to a live, embeddable chatbot.',
+          '**Consistent retrieval** so answers stay accurate across every channel.',
+          '**Shared analytics** that tie conversations back to knowledge quality and conversions.',
+          '**Predictable pricing** — see the [AI chatbot pricing guide](/blog/ai-chatbot-pricing-guide) for how plans scale.',
+        ],
+      },
+      {
+        type: 'quote',
+        text: 'A hub isn’t one more tool — it’s the tool that replaces the five you were about to buy.',
+      },
+      { type: 'h2', text: 'Who is an AI Chatbot Hub for?' },
+      {
+        type: 'p',
+        text: 'Support teams use a hub to deflect repetitive tickets, marketing teams use it to capture and qualify leads, and product teams use it to answer documentation questions instantly. Because everything lives in one place, a small team can run a serious chatbot without a dedicated ML engineer.',
+      },
+      { type: 'h2', text: 'How to launch your first bot on the hub' },
+      {
+        type: 'ol',
+        items: [
+          'Create a free account and open a new chatbot workspace.',
+          'Add knowledge — upload documents or paste a website URL to crawl.',
+          'Let the hub chunk, embed, and index your content automatically.',
+          'Test answers with the shareable link, then embed the script or call the API.',
+          'Open the analytics dashboard weekly to close knowledge gaps and lift your answer rate.',
+        ],
+      },
+      { type: 'h2', text: 'AI Chatbot Hub FAQ' },
+      { type: 'h3', text: 'What is an AI Chatbot Hub?' },
+      {
+        type: 'p',
+        text: 'An AI Chatbot Hub is a single platform that combines chatbot building, knowledge training, deployment, and analytics — so you don’t need separate tools for each stage. [ChatbotsHub](/) is an AI Chatbot Hub you can start using for free.',
+      },
+      { type: 'h3', text: 'Is an AI Chatbot Hub different from a chatbot builder?' },
+      {
+        type: 'p',
+        text: 'A chatbot builder usually stops at creating the bot. An AI chatbot hub goes further: it also handles training on your data, multi-channel deployment, and ongoing measurement through analytics.',
+      },
+      { type: 'h3', text: 'Do I need coding skills to use an AI Chatbot Hub?' },
+      {
+        type: 'p',
+        text: 'No. You add knowledge, test, and copy an embed script or API key. The retrieval, embeddings, and hosting are managed for you.',
+      },
+      {
+        type: 'cta',
+        label: 'Start on the AI Chatbot Hub free',
+        href: '/auth/register',
+        text: 'Build, train, and deploy your chatbot in one place.',
       },
     ],
   },
