@@ -1,7 +1,7 @@
 import { Calendar, Clock, ArrowUpRight } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { BlogImage } from '@/components/blog/BlogImage';
-import { getPostCoverPath, type BlogPost } from '@/lib/blog/posts';
+import { getPostCoverPath, type BlogCardPost } from '@/lib/blog/posts';
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -11,7 +11,7 @@ function formatDate(iso: string): string {
   });
 }
 
-export function BlogCard({ post, priority = false }: { post: BlogPost; priority?: boolean }) {
+export function BlogCard({ post, priority = false }: { post: BlogCardPost; priority?: boolean }) {
   return (
     <a
       href={`/blog/${post.slug}`}

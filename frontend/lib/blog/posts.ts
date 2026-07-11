@@ -31,6 +31,15 @@ export interface BlogPost {
   content: ContentBlock[];
 }
 
+/** Fields required to render a blog card (no heavy `content`). */
+export type BlogCardPost = Pick<
+  BlogPost,
+  'slug' | 'coverImage' | 'coverAlt' | 'category' | 'title' | 'excerpt' | 'publishedAt' | 'readingMinutes'
+>;
+
+/** Card fields plus the text used for client-side search matching. */
+export type BlogSearchPost = BlogCardPost & Pick<BlogPost, 'description' | 'keywords'>;
+
 const AUTHOR: BlogAuthor = {
   name: 'ChatbotsHub Team',
   role: 'AI & Product',

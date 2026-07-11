@@ -9,8 +9,8 @@ import {
   getOrganizationJsonLd,
   getWebSiteJsonLd,
 } from '@/lib/seo';
-import { getAllPosts } from '@/lib/blog/posts';
-import { BlogCard } from '@/components/blog/BlogCard';
+import { getAllPosts, type BlogSearchPost } from '@/lib/blog/posts';
+import { BlogSearch } from '@/components/blog/BlogSearch';
 import { BlogNav } from '@/components/blog/BlogNav';
 import { Footer } from '@/components/landing/Footer';
 
@@ -46,6 +46,18 @@ export const metadata: Metadata = createMetadata({
 
 export default function BlogIndexPage() {
   const posts = getAllPosts();
+  const searchPosts: BlogSearchPost[] = posts.map((p) => ({
+    slug: p.slug,
+    coverImage: p.coverImage,
+    coverAlt: p.coverAlt,
+    category: p.category,
+    title: p.title,
+    excerpt: p.excerpt,
+    description: p.description,
+    keywords: p.keywords,
+    publishedAt: p.publishedAt,
+    readingMinutes: p.readingMinutes,
+  }));
 
   const schemas = [
     getOrganizationJsonLd(),
@@ -94,13 +106,7 @@ export default function BlogIndexPage() {
             </Link>
           </header>
 
-          <section aria-label="Blog posts">
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {posts.map((post, i) => (
-                <BlogCard key={post.slug} post={post} priority={i < 3} />
-              ))}
-            </div>
-          </section>
+          <BlogSearch posts={searchPosts} />
         </main>
 
         <Footer />
