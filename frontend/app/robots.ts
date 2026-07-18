@@ -19,7 +19,8 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           '/dashboard',
           '/dashboard/',
-          '/chat',
+          '/chat$',
+          '/chat?',
           '/auth/forgot-password',
           '/auth/reset-password',
           '/api/',
