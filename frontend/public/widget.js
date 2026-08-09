@@ -15,11 +15,27 @@
 
   var apiKey = script.getAttribute('data-api-key');
   var position = script.getAttribute('data-position') || 'bottom-right';
-  var primaryColor = script.getAttribute('data-color') || '#6366f1';
+  var explicitColor = script.getAttribute('data-color');
+  var primaryColor = explicitColor || '#6366f1';
 
   if (!apiKey) {
     console.error('[ChatbotsHub] data-api-key attribute is required');
     return;
+  }
+
+  // Reuse the last known branding color (cached from a previous visit) so the
+  // toggle button and popup paint the customized color instantly on reload,
+  // instead of flashing the default until the iframe reports live settings.
+  var COLOR_CACHE_KEY = 'chatbotshub:widgetColor:' + apiKey;
+  if (!explicitColor) {
+    try {
+      var cachedColor = window.localStorage.getItem(COLOR_CACHE_KEY);
+      if (cachedColor && /^#[0-9A-Fa-f]{6}$/.test(cachedColor)) {
+        primaryColor = cachedColor;
+      }
+    } catch (e) {
+      /* localStorage may be unavailable in some embeds */
+    }
   }
 
   var WIDGET_BASE_URL = script.src.replace(/\/widget\.js.*$/, '');
@@ -59,7 +75,10 @@
   iframe.src = CHAT_URL;
   iframe.title = 'ChatbotsHub Widget';
   iframe.setAttribute('allowtransparency', 'true');
-  iframe.setAttribute('loading', 'lazy');
+  // Load eagerly (not lazy) so the chat page fetches the live branding and
+  // reports the customized color back to the toggle button on page load —
+  // otherwise the button keeps the default color until the user first opens
+  // the chat. The container stays hidden until opened; only settings sync runs.
   container.appendChild(iframe);
 
   // ─── Toggle logic ────────────────────────────────────────────────────────────
@@ -97,6 +116,11 @@
     if (typeof data.primaryColor === 'string' && /^#[0-9A-Fa-f]{6}$/.test(data.primaryColor)) {
       primaryColor = data.primaryColor;
       toggleBtn.style.background = data.primaryColor;
+      try {
+        window.localStorage.setItem(COLOR_CACHE_KEY, data.primaryColor);
+      } catch (e) {
+        /* ignore cache write failures */
+      }
     }
   });
 

@@ -163,6 +163,22 @@ export default function ChatWidgetPage() {
     }
   }, [apiKey]);
 
+  // Seed branding (color, avatar, name, welcome) from the last cached settings
+  // so a reload paints the customized look instantly instead of showing the
+  // defaults for the 1–2s the live settings fetch takes. Same-origin iframe
+  // storage persists across reloads; the fetch below refreshes it.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !apiKey) return;
+    try {
+      const raw = window.localStorage.getItem(`chatbotshub:settings:${apiKey}`);
+      if (!raw) return;
+      const cached = JSON.parse(raw) as Partial<ChatSettings>;
+      setSettings((prev) => ({ ...prev, ...cached }));
+    } catch {
+      // Ignore malformed or unavailable cache.
+    }
+  }, [apiKey]);
+
   useEffect(() => {
     if (!apiKey) return;
     axios
@@ -172,11 +188,27 @@ export default function ChatWidgetPage() {
       .then((r) => {
         const data = r.data?.data;
         if (!data) return;
+        const nextAvatar = data.avatarUrl?.trim() || null;
         setSettings((prev) => ({
           ...prev,
           ...data,
-          avatarUrl: data.avatarUrl?.trim() || null,
+          avatarUrl: nextAvatar,
         }));
+
+        try {
+          window.localStorage.setItem(
+            `chatbotshub:settings:${apiKey}`,
+            JSON.stringify({
+              chatbotName: data.chatbotName,
+              welcomeMessage: data.welcomeMessage,
+              primaryColor: data.primaryColor,
+              avatarUrl: nextAvatar,
+              language: data.language,
+            }),
+          );
+        } catch {
+          // Ignore cache write failures (e.g. storage disabled).
+        }
 
         // Notify the embedding widget so the floating toggle button can adopt
         // the branding color configured in dashboard settings.
