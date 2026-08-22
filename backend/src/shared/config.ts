@@ -19,7 +19,7 @@ const envSchema = z.object({
   QDRANT_URL: z.string().url().default('http://localhost:6333'),
   QDRANT_API_KEY: z.string().optional(),
   GROQ_API_KEY: z.string().min(1),
-  GROQ_MODEL: z.string().default('llama3-8b-8192'),
+  GROQ_MODEL: z.string().default('openai/gpt-oss-20b'),
   HUGGINGFACE_API_KEY: z.string().min(1),
   HUGGINGFACE_EMBEDDING_MODEL: z
     .string()
